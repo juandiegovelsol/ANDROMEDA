@@ -1,0 +1,77 @@
+Use the following instructions to solve all the prompts on this chat. DO NOT IMPLEMENT ANYTHING IN THIS TURN, JUST SAVE THE INSTRUCTIONS: "# Complete LLM Instructions for Professional Web Application Development
+
+When creating web applications from user prompts, you must follow these comprehensive guidelines to produce professional, commercial-grade interfaces that meet Fortune 500 company standards.
+
+## Core Mission and Standards
+
+Your primary objective is to create web applications that are not merely functional demos, but production-ready interfaces that could be deployed by major corporations in 2025. Every response must significantly exceed the quality of existing leading models by delivering both exceptional visual appeal and complete functionality.
+
+The quality bar is intentionally set at an extraordinarily high level. Your output should resemble the sophisticated designs found on Dribbble and modern commercial websites, not basic tutorials or placeholder interfaces. Think of creating something that would make a user stop scrolling and say "wow" - this is the emotional impact you're aiming for.
+
+## Environment and Technical Requirements
+
+You must work within specific technical constraints that are non-negotiable. For HTML projects, everything must be completely self-contained within a single HTML file using only HTML, CSS, and plain JavaScript. All styling must use ONLY Tailwind CSS utility classes exclusively - no external CSS files or custom stylesheets are permitted.
+
+For React projects, create a single, self-contained TSX file that exports a default component with no required props. Again, use ONLY Tailwind CSS for styling, and ensure the component can function independently without external dependencies.
+
+Never use browser storage APIs like localStorage or sessionStorage, as these are not supported in the target environment. Instead, use React state for React components or JavaScript variables for HTML projects to manage data during the session.
+
+## Visual Design Excellence
+
+The visual appearance of your application is perhaps the most critical aspect of success. Your design must reflect contemporary 2025 aesthetics that incorporate modern design trends such as glassmorphism, neumorphism, minimalism, or semi-flat design principles.
+
+Pay meticulous attention to typography by selecting modern, readable fonts with proper hierarchy. Your color palette should be cohesive and appealing, with appropriate contrast ratios for accessibility. Spacing must be consistent and purposeful - avoid both crowded layouts and excessive gaps that create awkward white space.
+
+Layout design requires strategic thinking about viewport utilization. Don't create rigid, center-aligned designs that waste screen real estate. Instead, implement responsive layouts that adapt gracefully to different screen sizes while maintaining visual coherence. Consider using side navigation patterns where appropriate, as these often provide more modern and functional user experiences than traditional horizontal menu bars.
+
+Interactive elements deserve special attention. Buttons should be clearly distinguishable with appropriate styling that goes beyond basic rectangular shapes. Implement subtle hover effects that provide helpful feedback without causing layout shifts or border conflicts. Use shadows thoughtfully to create depth and visual hierarchy, but avoid overuse that creates vague or confusing boundaries between elements.
+
+Visual hierarchy must guide the user's attention logically through your interface. This means establishing clear information priority through size, color, positioning, and spacing decisions. Every element should have a clear purpose and relationship to other elements on the page.
+
+## Feature Completeness and Functionality
+
+Feature completeness means implementing every explicit requirement mentioned in the user's prompt, no matter how small or seemingly minor. This includes exact text labels, specific functionalities, and particular layout requirements. Even changing "Completed" to "Done" in a tab label constitutes a failure to meet requirements.
+
+Beyond explicit requirements, you must also identify and implement implicit features that users would expect in a production application. For example, if creating a search interface, the search functionality must actually filter results dynamically. If building a dashboard with filters, those filters must change the displayed data accordingly.
+
+Interactive elements must behave as users expect them to in real applications. This means implementing proper loading states, error handling, form validation, and feedback mechanisms. A button that doesn't respond to clicks or a form that doesn't validate input fails to meet production standards.
+
+Don't add features not requested in the prompt, especially placeholder features labeled "Coming Soon" or similar. These create clutter and confusion without adding value. Focus entirely on delivering exactly what was requested, but delivering it completely and professionally.
+
+## Code Quality Standards
+
+Your code must demonstrate professional development practices that would pass code review in a commercial environment. For HTML, use semantic HTML5 tags like header, main, section, and nav where appropriate. Ensure proper nesting, include necessary accessibility attributes like alt text and ARIA labels, and maintain clean, error-free syntax.
+
+CSS should leverage modern techniques including flexbox and grid layouts. Organize your styles logically and avoid redundant declarations. Since you're ONLY using Tailwind, apply utility classes consistently and purposefully.
+
+JavaScript code should use modern ES6+ features including arrow functions, const/let declarations, and appropriate async handling. Structure your code logically with clear variable names and minimal global scope pollution. For React components, use current React patterns with proper hook usage and component structure.
+
+TypeScript implementations should include appropriate type definitions without missing key types that would cause development issues. Your code should serve as a positive example of current best practices.
+
+## Design Trend Integration
+
+Select and implement a specific modern design trend that enhances your application's visual appeal. Glassmorphism creates sophisticated interfaces using frosted glass effects with transparency and subtle borders. Neumorphism offers soft, extruded appearances using subtle shadow contrasts. Minimalism focuses on essential elements with substantial white space and clean typography.
+
+Whatever trend you choose, implement it consistently throughout your interface. Study examples from Dribbble or contemporary commercial websites to understand how these trends are applied professionally. Avoid mixing trends in ways that create visual confusion.
+
+## Responsive Design Implementation
+
+Your application must provide excellent experiences across all device sizes specified in the requirements. Desktop-first designs should be stunning on large screens while remaining functional on mobile devices. Mobile-first designs should excel on small screens while scaling appropriately to desktop sizes.
+
+Use ONLY Tailwind's responsive utilities (sm:, md:, lg:, xl:) to create layouts that adapt intelligently to different viewport sizes. Test your designs by resizing browser windows to ensure elements don't overflow, text remains readable, and interactions stay accessible across all breakpoints.
+
+## Quality Control and Validation
+
+Before considering your work complete, systematically verify that every requested feature is both present and functional. Create a mental checklist of all prompt requirements and test each one thoroughly. Ensure interactive elements respond appropriately, forms validate correctly, and navigation works as expected.
+
+Visual elements should be professionally polished with attention to details like proper alignment, consistent spacing, appropriate contrast, and smooth transitions. Your interface should feel cohesive and intentionally designed rather than assembled from disparate components.
+
+## Critical Success Factors
+
+Remember that your goal is not just to meet requirements, but to significantly exceed them in terms of both visual appeal and functional completeness. Every aspect of your application should demonstrate the quality and attention to detail expected in commercial software development.
+
+Avoid common failure patterns such as outdated typography, poor color choices, inconsistent spacing, basic button styling, ineffective hover states, missing functionality, and non-responsive layouts. Each of these issues alone can disqualify an otherwise well-executed application.
+
+Your final deliverable should make users genuinely impressed with both its appearance and functionality. It should feel like a professional application they might encounter on leading commercial websites, not a tutorial exercise or proof-of-concept demo.
+
+This level of quality requires careful planning, attention to detail, and commitment to excellence in every aspect of the development process. The standards are intentionally high because the goal is to create training examples that push the boundaries of what's possible in AI-generated web applications."

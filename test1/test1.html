@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SilverStocks | Professional Stock Visualization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              silver: {
+                50: "#f8fafc",
+                100: "#f1f5f9",
+                200: "#e2e8f0",
+                300: "#cbd5e1",
+                400: "#94a3b8",
+                500: "#64748b",
+                600: "#475569",
+                700: "#334155",
+                800: "#1e293b",
+                900: "#0f172a",
+              },
+              accent: "#3b82f6",
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/css">
+      .chart-container {
+        height: 300px;
+        position: relative;
+      }
+      .slide-in {
+        animation: slideIn 0.3s ease-out;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .ticker {
+        animation: ticker-scroll 20s linear infinite;
+      }
+      @keyframes ticker-scroll {
+        0% {
+          transform: translateX(100%);
+        }
+        100% {
+          transform: translateX(-100%);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-silver-100 min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="bg-silver-800 text-white shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 flex items-center">
+              <i class="fas fa-chart-line text-accent text-xl mr-2"></i>
+              <span class="font-bold text-xl">SilverStocks</span>
+            </div>
+            <div class="hidden md:ml-10 md:flex md:space-x-8">
+              <a
+                href="#"
+                id="nav-dashboard"
+                class="text-accent border-b-2 border-accent px-1 pt-1 text-sm font-medium"
+                >Dashboard</a
+              >
+              <a
+                href="#"
+                id="nav-profile"
+                class="text-silver-300 hover:text-white border-transparent hover:border-gray-300 border-b-2 px-1 pt-1 text-sm font-medium"
+                >Profile</a
+              >
+              <a
+                href="#"
+                id="nav-saved"
+                class="text-silver-300 hover:text-white border-transparent hover:border-gray-300 border-b-2 px-1 pt-1 text-sm font-medium"
+                >Saved Stocks</a
+              >
+            </div>
+          </div>
+          <div class="flex items-center">
+            <div id="user-actions" class="hidden">
+              <span
+                class="text-silver-300 mr-4 text-sm"
+                id="username-display"
+              ></span>
+              <button
+                id="logout-btn"
+                class="bg-silver-700 hover:bg-silver-600 text-white px-3 py-1 rounded-md text-sm font-medium"
+              >
+                Logout
+              </button>
+            </div>
+            <div id="login-signup" class="flex space-x-2">
+              <button
+                id="login-btn"
+                class="bg-silver-700 hover:bg-silver-600 text-white px-3 py-1 rounded-md text-sm font-medium"
+              >
+                Login
+              </button>
+              <button
+                id="signup-btn"
+                class="bg-accent hover:bg-blue-500 text-white px-3 py-1 rounded-md text-sm font-medium"
+              >
+                Sign Up
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+      <!-- Login Modal -->
+      <div
+        id="login-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+      >
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md slide-in">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-silver-800">
+              Login to Your Account
+            </h3>
+            <button
+              id="close-login-modal"
+              class="text-silver-500 hover:text-silver-700"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <form id="login-form">
+            <div class="mb-4">
+              <label
+                class="block text-silver-700 text-sm font-medium mb-1"
+                for="login-email"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="login-email"
+                class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label
+                class="block text-silver-700 text-sm font-medium mb-1"
+                for="login-password"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="login-password"
+                class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-accent hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300"
+            >
+              Login
+            </button>
+          </form>
+          <div class="mt-4 text-center text-sm text-silver-600">
+            Don't have an account?
+            <button
+              id="switch-to-signup"
+              class="text-accent hover:underline font-medium"
+            >
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signup Modal -->
+      <div
+        id="signup-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+      >
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md slide-in">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-silver-800">
+              Create an Account
+            </h3>
+            <button
+              id="close-signup-modal"
+              class="text-silver-500 hover:text-silver-700"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <form id="signup-form">
+            <div class="mb-4">
+              <label
+                class="block text-silver-700 text-sm font-medium mb-1"
+                for="signup-name"
+                >Full Name</label
+              >
+              <input
+                type="text"
+                id="signup-name"
+                class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label
+                class="block text-silver-700 text-sm font-medium mb-1"
+                for="signup-email"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="signup-email"
+                class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label
+                class="block text-silver-700 text-sm font-medium mb-1"
+                for="signup-password"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="signup-password"
+                class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label
+                class="block text-silver-700 text-sm font-medium mb-1"
+                for="signup-confirm"
+                >Confirm Password</label
+              >
+              <input
+                type="password"
+                id="signup-confirm"
+                class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-accent hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300"
+            >
+              Create Account
+            </button>
+          </form>
+          <div class="mt-4 text-center text-sm text-silver-600">
+            Already have an account?
+            <button
+              id="switch-to-login"
+              class="text-accent hover:underline font-medium"
+            >
+              Login
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard View -->
+      <section id="dashboard-view" class="py-8 fade-in">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <!-- Market Ticker -->
+          <div
+            class="bg-silver-800 text-white py-2 mb-8 rounded-lg overflow-hidden"
+          >
+            <div class="ticker flex whitespace-nowrap">
+              <div class="px-4 flex items-center">
+                <span class="text-green-400 mr-2">NASDAQ</span>
+                <span>↑ 14,346.02 (+1.2%)</span>
+              </div>
+              <div class="px-4 flex items-center">
+                <span class="text-green-400 mr-2">AAPL</span>
+                <span>↑ 178.72 (+0.8%)</span>
+              </div>
+              <div class="px-4 flex items-center">
+                <span class="text-red-400 mr-2">MSFT</span>
+                <span>↓ 340.54 (-0.4%)</span>
+              </div>
+              <div class="px-4 flex items-center">
+                <span class="text-green-400 mr-2">GOOGL</span>
+                <span>↑ 138.25 (+1.5%)</span>
+              </div>
+              <div class="px-4 flex items-center">
+                <span class="text-red-400 mr-2">AMZN</span>
+                <span>↓ 132.56 (-0.9%)</span>
+              </div>
+              <div class="px-4 flex items-center">
+                <span class="text-green-400 mr-2">TSLA</span>
+                <span>↑ 260.34 (+2.1%)</span>
+              </div>
+              <div class="px-4 flex items-center">
+                <span class="text-green-400 mr-2">META</span>
+                <span>↑ 312.78 (+1.7%)</span>
+              </div>
+              <div class="px-4 flex items-center">
+                <span class="text-red-400 mr-2">NFLX</span>
+                <span>↓ 422.10 (-0.3%)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row gap-6 mb-8">
+            <!-- Search Section -->
+            <div class="w-full md:w-1/3">
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-semibold text-silver-800 mb-4">
+                  Search Stocks
+                </h2>
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="stock-search"
+                    class="w-full px-4 py-2 border border-silver-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Search by symbol or name..."
+                  />
+                  <i
+                    class="fas fa-search absolute right-3 top-3 text-silver-400"
+                  ></i>
+                </div>
+                <div
+                  id="search-results"
+                  class="mt-4 max-h-80 overflow-y-auto hidden"
+                >
+                  <!-- Search results will be populated here -->
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-md p-6 mt-6">
+                <h2 class="text-xl font-semibold text-silver-800 mb-4">
+                  Quick Actions
+                </h2>
+                <div class="grid grid-cols-2 gap-4">
+                  <button
+                    class="bg-silver-100 hover:bg-silver-200 text-silver-800 py-2 px-4 rounded-lg transition flex items-center justify-center"
+                  >
+                    <i class="fas fa-download mr-2"></i> Export
+                  </button>
+                  <button
+                    class="bg-silver-100 hover:bg-silver-200 text-silver-800 py-2 px-4 rounded-lg transition flex items-center justify-center"
+                  >
+                    <i class="fas fa-bell mr-2"></i> Alerts
+                  </button>
+                  <button
+                    class="bg-silver-100 hover:bg-silver-200 text-silver-800 py-2 px-4 rounded-lg transition flex items-center justify-center"
+                  >
+                    <i class="fas fa-filter mr-2"></i> Filters
+                  </button>
+                  <button
+                    class="bg-silver-100 hover:bg-silver-200 text-silver-800 py-2 px-4 rounded-lg transition flex items-center justify-center"
+                  >
+                    <i class="fas fa-cog mr-2"></i> Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="w-full md:w-2/3">
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                  <h2 class="text-xl font-semibold text-silver-800">
+                    Trending Stocks
+                  </h2>
+                  <div class="flex space-x-2">
+                    <button
+                      class="bg-silver-100 hover:bg-silver-200 text-silver-700 px-3 py-1 rounded-md text-sm"
+                    >
+                      1D
+                    </button>
+                    <button
+                      class="bg-accent text-white px-3 py-1 rounded-md text-sm"
+                    >
+                      1W
+                    </button>
+                    <button
+                      class="bg-silver-100 hover:bg-silver-200 text-silver-700 px-3 py-1 rounded-md text-sm"
+                    >
+                      1M
+                    </button>
+                    <button
+                      class="bg-silver-100 hover:bg-silver-200 text-silver-700 px-3 py-1 rounded-md text-sm"
+                    >
+                      1Y
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <!-- Stock Chart Cards -->
+                  <div class="bg-silver-50 rounded-xl p-4 card-hover">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 class="font-semibold text-silver-800">
+                          Apple Inc. (AAPL)
+                        </h3>
+                        <p class="text-silver-500 text-sm">NASDAQ</p>
+                      </div>
+                      <span class="text-green-500 font-semibold">+1.8%</span>
+                    </div>
+                    <div class="chart-container">
+                      <canvas id="chart-aapl"></canvas>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                      <span class="text-silver-700 font-medium">$178.72</span>
+                      <button
+                        class="save-btn text-silver-500 hover:text-accent"
+                        data-symbol="AAPL"
+                      >
+                        <i class="far fa-star"></i> Save
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="bg-silver-50 rounded-xl p-4 card-hover">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 class="font-semibold text-silver-800">
+                          Microsoft (MSFT)
+                        </h3>
+                        <p class="text-silver-500 text-sm">NASDAQ</p>
+                      </div>
+                      <span class="text-red-500 font-semibold">-0.4%</span>
+                    </div>
+                    <div class="chart-container">
+                      <canvas id="chart-msft"></canvas>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                      <span class="text-silver-700 font-medium">$340.54</span>
+                      <button
+                        class="save-btn text-silver-500 hover:text-accent"
+                        data-symbol="MSFT"
+                      >
+                        <i class="far fa-star"></i> Save
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="bg-silver-50 rounded-xl p-4 card-hover">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 class="font-semibold text-silver-800">
+                          Google (GOOGL)
+                        </h3>
+                        <p class="text-silver-500 text-sm">NASDAQ</p>
+                      </div>
+                      <span class="text-green-500 font-semibold">+2.3%</span>
+                    </div>
+                    <div class="chart-container">
+                      <canvas id="chart-googl"></canvas>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                      <span class="text-silver-700 font-medium">$138.25</span>
+                      <button
+                        class="save-btn text-silver-500 hover:text-accent"
+                        data-symbol="GOOGL"
+                      >
+                        <i class="far fa-star"></i> Save
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="bg-silver-50 rounded-xl p-4 card-hover">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 class="font-semibold text-silver-800">
+                          Amazon (AMZN)
+                        </h3>
+                        <p class="text-silver-500 text-sm">NASDAQ</p>
+                      </div>
+                      <span class="text-red-500 font-semibold">-0.9%</span>
+                    </div>
+                    <div class="chart-container">
+                      <canvas id="chart-amzn"></canvas>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                      <span class="text-silver-700 font-medium">$132.56</span>
+                      <button
+                        class="save-btn text-silver-500 hover:text-accent"
+                        data-symbol="AMZN"
+                      >
+                        <i class="far fa-star"></i> Save
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Profile View -->
+      <section id="profile-view" class="py-8 hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-silver-800 mb-6">
+              User Profile
+            </h2>
+
+            <div class="flex flex-col md:flex-row gap-8">
+              <div class="md:w-1/3">
+                <div class="bg-silver-100 rounded-xl p-6 text-center">
+                  <div
+                    class="w-24 h-24 rounded-full bg-accent mx-auto flex items-center justify-center mb-4"
+                  >
+                    <span
+                      class="text-white text-3xl font-bold"
+                      id="profile-initials"
+                      >JD</span
+                    >
+                  </div>
+                  <h3
+                    class="text-xl font-semibold text-silver-800"
+                    id="profile-name"
+                  >
+                    John Doe
+                  </h3>
+                  <p class="text-silver-500 mb-4" id="profile-email">
+                    john.doe@example.com
+                  </p>
+                  <button
+                    id="edit-profile-btn"
+                    class="w-full bg-silver-200 hover:bg-silver-300 text-silver-800 py-2 rounded-lg font-medium transition"
+                  >
+                    Edit Profile
+                  </button>
+                </div>
+
+                <div class="bg-silver-100 rounded-xl p-6 mt-6">
+                  <h4 class="font-semibold text-silver-800 mb-3">
+                    Account Statistics
+                  </h4>
+                  <div class="space-y-3">
+                    <div class="flex justify-between">
+                      <span class="text-silver-600">Member Since</span>
+                      <span class="font-medium" id="member-since"
+                        >Jun 2023</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-silver-600">Saved Stocks</span>
+                      <span class="font-medium" id="saved-count">8</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-silver-600">Searches</span>
+                      <span class="font-medium" id="search-count">42</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="md:w-2/3">
+                <div class="bg-silver-50 rounded-xl p-6">
+                  <h4 class="font-semibold text-silver-800 mb-4">
+                    Personal Information
+                  </h4>
+                  <form id="profile-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          class="block text-silver-700 text-sm font-medium mb-1"
+                          >First Name</label
+                        >
+                        <input
+                          type="text"
+                          class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                          value="John"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-silver-700 text-sm font-medium mb-1"
+                          >Last Name</label
+                        >
+                        <input
+                          type="text"
+                          class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                          value="Doe"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-silver-700 text-sm font-medium mb-1"
+                        >Email</label
+                      >
+                      <input
+                        type="email"
+                        class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                        value="john.doe@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-silver-700 text-sm font-medium mb-1"
+                        >Phone</label
+                      >
+                      <input
+                        type="tel"
+                        class="w-full px-3 py-2 border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                        value="(555) 123-4567"
+                      />
+                    </div>
+                    <div class="pt-4">
+                      <button
+                        type="submit"
+                        class="bg-accent hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md transition"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                <div class="mt-6">
+                  <div class="flex justify-between items-center mb-4">
+                    <h4 class="font-semibold text-silver-800">
+                      Notification Settings
+                    </h4>
+                    <div
+                      class="relative inline-block w-10 mr-2 align-middle select-none"
+                    >
+                      <input
+                        type="checkbox"
+                        id="notifications-toggle"
+                        class="sr-only"
+                        checked
+                      />
+                      <div
+                        class="block bg-silver-300 w-10 h-6 rounded-full"
+                      ></div>
+                      <div
+                        class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform translate-x-4"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div class="bg-silver-50 rounded-xl p-6">
+                    <div class="space-y-4">
+                      <div class="flex items-center">
+                        <input
+                          type="checkbox"
+                          class="form-checkbox h-4 w-4 text-accent"
+                          id="price-alerts"
+                          checked
+                        />
+                        <label for="price-alerts" class="ml-2 text-silver-700"
+                          >Price movement alerts</label
+                        >
+                      </div>
+                      <div class="flex items-center">
+                        <input
+                          type="checkbox"
+                          class="form-checkbox h-4 w-4 text-accent"
+                          id="news-alerts"
+                          checked
+                        />
+                        <label for="news-alerts" class="ml-2 text-silver-700"
+                          >Company news updates</label
+                        >
+                      </div>
+                      <div class="flex items-center">
+                        <input
+                          type="checkbox"
+                          class="form-checkbox h-4 w-4 text-accent"
+                          id="report-alerts"
+                        />
+                        <label for="report-alerts" class="ml-2 text-silver-700"
+                          >Earnings reports</label
+                        >
+                      </div>
+                      <div class="flex items-center">
+                        <input
+                          type="checkbox"
+                          class="form-checkbox h-4 w-4 text-accent"
+                          id="weekly-digest"
+                          checked
+                        />
+                        <label for="weekly-digest" class="ml-2 text-silver-700"
+                          >Weekly market digest</label
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Saved Stocks View -->
+      <section id="saved-view" class="py-8 hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-semibold text-silver-800">
+                Saved Stocks
+              </h2>
+              <div class="flex space-x-2">
+                <button
+                  class="bg-silver-100 hover:bg-silver-200 text-silver-700 px-3 py-1 rounded-md text-sm flex items-center"
+                >
+                  <i class="fas fa-sort mr-1"></i> Sort
+                </button>
+                <button
+                  class="bg-silver-100 hover:bg-silver-200 text-silver-700 px-3 py-1 rounded-md text-sm flex items-center"
+                >
+                  <i class="fas fa-filter mr-1"></i> Filter
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-silver-200">
+                <thead class="bg-silver-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-silver-500 uppercase tracking-wider"
+                    >
+                      Symbol
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-silver-500 uppercase tracking-wider"
+                    >
+                      Company
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-silver-500 uppercase tracking-wider"
+                    >
+                      Price
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-silver-500 uppercase tracking-wider"
+                    >
+                      Change
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-silver-500 uppercase tracking-wider"
+                    >
+                      Market Cap
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-silver-500 uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-silver-200">
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div
+                          class="flex-shrink-0 h-10 w-10 bg-accent rounded-full flex items-center justify-center"
+                        >
+                          <span class="text-white font-semibold">A</span>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-silver-900">
+                            AAPL
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-silver-900">Apple Inc.</div>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-silver-900"
+                    >
+                      $178.72
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"
+                      >
+                        +1.8%
+                      </span>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-silver-900"
+                    >
+                      $2.81T
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button class="text-accent hover:text-blue-700 mr-3">
+                        <i class="fas fa-chart-line"></i> View
+                      </button>
+                      <button
+                        class="text-red-500 hover:text-red-700 remove-btn"
+                        data-symbol="AAPL"
+                      >
+                        <i class="fas fa-trash-alt"></i> Remove
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div
+                          class="flex-shrink-0 h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center"
+                        >
+                          <span class="text-white font-semibold">M</span>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-silver-900">
+                            MSFT
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-silver-900">Microsoft Corp</div>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-silver-900"
+                    >
+                      $340.54
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800"
+                      >
+                        -0.4%
+                      </span>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-silver-900"
+                    >
+                      $2.53T
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button class="text-accent hover:text-blue-700 mr-3">
+                        <i class="fas fa-chart-line"></i> View
+                      </button>
+                      <button
+                        class="text-red-500 hover:text-red-700 remove-btn"
+                        data-symbol="MSFT"
+                      >
+                        <i class="fas fa-trash-alt"></i> Remove
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div
+                          class="flex-shrink-0 h-10 w-10 bg-green-500 rounded-full flex items-center justify-center"
+                        >
+                          <span class="text-white font-semibold">G</span>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-silver-900">
+                            GOOGL
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-silver-900">Alphabet Inc.</div>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-silver-900"
+                    >
+                      $138.25
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"
+                      >
+                        +2.3%
+                      </span>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-silver-900"
+                    >
+                      $1.76T
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button class="text-accent hover:text-blue-700 mr-3">
+                        <i class="fas fa-chart-line"></i> View
+                      </button>
+                      <button
+                        class="text-red-500 hover:text-red-700 remove-btn"
+                        data-symbol="GOOGL"
+                      >
+                        <i class="fas fa-trash-alt"></i> Remove
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div
+                          class="flex-shrink-0 h-10 w-10 bg-yellow-500 rounded-full flex items-center justify-center"
+                        >
+                          <span class="text-white font-semibold">A</span>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-silver-900">
+                            AMZN
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-silver-900">Amazon.com Inc.</div>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-silver-900"
+                    >
+                      $132.56
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800"
+                      >
+                        -0.9%
+                      </span>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-silver-900"
+                    >
+                      $1.36T
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button class="text-accent hover:text-blue-700 mr-3">
+                        <i class="fas fa-chart-line"></i> View
+                      </button>
+                      <button
+                        class="text-red-500 hover:text-red-700 remove-btn"
+                        data-symbol="AMZN"
+                      >
+                        <i class="fas fa-trash-alt"></i> Remove
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-8 flex justify-between items-center">
+              <div class="text-sm text-silver-500">
+                Showing <span class="font-medium">4</span> of
+                <span class="font-medium">8</span> saved stocks
+              </div>
+              <div class="flex space-x-2">
+                <button
+                  class="bg-silver-100 hover:bg-silver-200 text-silver-700 px-4 py-2 rounded-md"
+                >
+                  Previous
+                </button>
+                <button
+                  class="bg-accent hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-silver-800 text-white py-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h3 class="text-lg font-semibold mb-4">SilverStocks</h3>
+            <p class="text-silver-300 text-sm">
+              Professional stock visualization tools for financial experts and
+              investors. Real-time data, advanced charting, and portfolio
+              management.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Features</h3>
+            <ul class="space-y-2 text-silver-300 text-sm">
+              <li><a href="#" class="hover:text-white">Market Overview</a></li>
+              <li><a href="#" class="hover:text-white">Stock Charts</a></li>
+              <li>
+                <a href="#" class="hover:text-white">Portfolio Tracker</a>
+              </li>
+              <li><a href="#" class="hover:text-white">Financial News</a></li>
+              <li><a href="#" class="hover:text-white">Watchlists</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Resources</h3>
+            <ul class="space-y-2 text-silver-300 text-sm">
+              <li><a href="#" class="hover:text-white">Learning Center</a></li>
+              <li><a href="#" class="hover:text-white">Market Analysis</a></li>
+              <li>
+                <a href="#" class="hover:text-white">API Documentation</a>
+              </li>
+              <li><a href="#" class="hover:text-white">Help Center</a></li>
+              <li><a href="#" class="hover:text-white">Community</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Subscribe</h3>
+            <p class="text-silver-300 text-sm mb-3">
+              Get the latest market updates and insights.
+            </p>
+            <div class="flex">
+              <input
+                type="email"
+                placeholder="Your email"
+                class="px-3 py-2 rounded-l-md w-full text-silver-800 focus:outline-none"
+              />
+              <button
+                class="bg-accent hover:bg-blue-600 text-white px-4 py-2 rounded-r-md"
+              >
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="border-t border-silver-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center"
+        >
+          <p class="text-silver-400 text-sm">
+            © 2025 SilverStocks. All rights reserved.
+          </p>
+          <div class="flex space-x-6 mt-4 md:mt-0">
+            <a href="#" class="text-silver-400 hover:text-white"
+              ><i class="fab fa-twitter"></i
+            ></a>
+            <a href="#" class="text-silver-400 hover:text-white"
+              ><i class="fab fa-linkedin"></i
+            ></a>
+            <a href="#" class="text-silver-400 hover:text-white"
+              ><i class="fab fa-facebook"></i
+            ></a>
+            <a href="#" class="text-silver-400 hover:text-white"
+              ><i class="fab fa-instagram"></i
+            ></a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Simulated user data
+      let currentUser = null;
+      const users = [
+        {
+          id: 1,
+          name: "John Doe",
+          email: "john.doe@example.com",
+          password: "password123",
+          savedStocks: ["AAPL", "MSFT"],
+        },
+      ];
+
+      // Mock stock data
+      const stocks = [
+        {
+          symbol: "AAPL",
+          name: "Apple Inc.",
+          price: 178.72,
+          change: 1.8,
+          marketCap: "2.81T",
+        },
+        {
+          symbol: "MSFT",
+          name: "Microsoft Corp",
+          price: 340.54,
+          change: -0.4,
+          marketCap: "2.53T",
+        },
+        {
+          symbol: "GOOGL",
+          name: "Alphabet Inc.",
+          price: 138.25,
+          change: 2.3,
+          marketCap: "1.76T",
+        },
+        {
+          symbol: "AMZN",
+          name: "Amazon.com Inc.",
+          price: 132.56,
+          change: -0.9,
+          marketCap: "1.36T",
+        },
+        {
+          symbol: "TSLA",
+          name: "Tesla Inc.",
+          price: 260.34,
+          change: 2.1,
+          marketCap: "820.34B",
+        },
+        {
+          symbol: "META",
+          name: "Meta Platforms",
+          price: 312.78,
+          change: 1.7,
+          marketCap: "798.45B",
+        },
+        {
+          symbol: "NFLX",
+          name: "Netflix Inc.",
+          price: 422.1,
+          change: -0.3,
+          marketCap: "185.29B",
+        },
+        {
+          symbol: "NVDA",
+          name: "NVIDIA Corp",
+          price: 452.02,
+          change: 3.2,
+          marketCap: "1.12T",
+        },
+      ];
+
+      // DOM elements
+      const loginModal = document.getElementById("login-modal");
+      const signupModal = document.getElementById("signup-modal");
+      const loginBtn = document.getElementById("login-btn");
+      const signupBtn = document.getElementById("signup-btn");
+      const closeLoginModal = document.getElementById("close-login-modal");
+      const closeSignupModal = document.getElementById("close-signup-modal");
+      const loginForm = document.getElementById("login-form");
+      const signupForm = document.getElementById("signup-form");
+      const switchToSignup = document.getElementById("switch-to-signup");
+      const switchToLogin = document.getElementById("switch-to-login");
+      const userActions = document.getElementById("user-actions");
+      const loginSignup = document.getElementById("login-signup");
+      const usernameDisplay = document.getElementById("username-display");
+      const logoutBtn = document.getElementById("logout-btn");
+      const navDashboard = document.getElementById("nav-dashboard");
+      const navProfile = document.getElementById("nav-profile");
+      const navSaved = document.getElementById("nav-saved");
+      const dashboardView = document.getElementById("dashboard-view");
+      const profileView = document.getElementById("profile-view");
+      const savedView = document.getElementById("saved-view");
+      const stockSearch = document.getElementById("stock-search");
+      const searchResults = document.getElementById("search-results");
+      const saveButtons = document.querySelectorAll(".save-btn");
+      const removeButtons = document.querySelectorAll(".remove-btn");
+
+      // Initialize charts
+      function initCharts() {
+        // Generate mock data for charts
+        function generateData() {
+          const data = [];
+          let value = Math.random() * 100 + 150;
+          for (let i = 0; i < 20; i++) {
+            value += (Math.random() - 0.5) * 10;
+            data.push(value.toFixed(2));
+          }
+          return data;
+        }
+
+        // AAPL Chart
+        new Chart(document.getElementById("chart-aapl"), {
+          type: "line",
+          data: {
+            labels: Array.from({ length: 20 }, (_, i) => `${i + 1}`),
+            datasets: [
+              {
+                label: "AAPL",
+                data: generateData(),
+                borderColor: "#3b82f6",
+                backgroundColor: "rgba(59, 130, 246, 0.1)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { display: false },
+              x: { display: false },
+            },
+            interaction: { intersect: false, mode: "index" },
+          },
+        });
+
+        // MSFT Chart
+        new Chart(document.getElementById("chart-msft"), {
+          type: "line",
+          data: {
+            labels: Array.from({ length: 20 }, (_, i) => `${i + 1}`),
+            datasets: [
+              {
+                label: "MSFT",
+                data: generateData(),
+                borderColor: "#ef4444",
+                backgroundColor: "rgba(239, 68, 68, 0.1)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { display: false },
+              x: { display: false },
+            },
+            interaction: { intersect: false, mode: "index" },
+          },
+        });
+
+        // GOOGL Chart
+        new Chart(document.getElementById("chart-googl"), {
+          type: "line",
+          data: {
+            labels: Array.from({ length: 20 }, (_, i) => `${i + 1}`),
+            datasets: [
+              {
+                label: "GOOGL",
+                data: generateData(),
+                borderColor: "#10b981",
+                backgroundColor: "rgba(16, 185, 129, 0.1)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { display: false },
+              x: { display: false },
+            },
+            interaction: { intersect: false, mode: "index" },
+          },
+        });
+
+        // AMZN Chart
+        new Chart(document.getElementById("chart-amzn"), {
+          type: "line",
+          data: {
+            labels: Array.from({ length: 20 }, (_, i) => `${i + 1}`),
+            datasets: [
+              {
+                label: "AMZN",
+                data: generateData(),
+                borderColor: "#f59e0b",
+                backgroundColor: "rgba(245, 158, 11, 0.1)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { display: false },
+              x: { display: false },
+            },
+            interaction: { intersect: false, mode: "index" },
+          },
+        });
+      }
+
+      // Event Listeners
+      loginBtn.addEventListener("click", () => {
+        loginModal.classList.remove("hidden");
+      });
+
+      signupBtn.addEventListener("click", () => {
+        signupModal.classList.remove("hidden");
+      });
+
+      closeLoginModal.addEventListener("click", () => {
+        loginModal.classList.add("hidden");
+      });
+
+      closeSignupModal.addEventListener("click", () => {
+        signupModal.classList.add("hidden");
+      });
+
+      switchToSignup.addEventListener("click", () => {
+        loginModal.classList.add("hidden");
+        signupModal.classList.remove("hidden");
+      });
+
+      switchToLogin.addEventListener("click", () => {
+        signupModal.classList.add("hidden");
+        loginModal.classList.remove("hidden");
+      });
+
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = document.getElementById("login-email").value;
+        const password = document.getElementById("login-password").value;
+
+        const user = users.find(
+          (u) => u.email === email && u.password === password
+        );
+
+        if (user) {
+          currentUser = user;
+          updateUIAfterLogin();
+          loginModal.classList.add("hidden");
+        } else {
+          alert("Invalid credentials. Please try again.");
+        }
+      });
+
+      signupForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("signup-name").value;
+        const email = document.getElementById("signup-email").value;
+        const password = document.getElementById("signup-password").value;
+        const confirmPassword = document.getElementById("signup-confirm").value;
+
+        if (password !== confirmPassword) {
+          alert("Passwords do not match.");
+          return;
+        }
+
+        // Create new user
+        const newUser = {
+          id: users.length + 1,
+          name: name,
+          email: email,
+          password: password,
+          savedStocks: [],
+        };
+
+        users.push(newUser);
+        currentUser = newUser;
+        updateUIAfterLogin();
+        signupModal.classList.add("hidden");
+
+        // Update profile page
+        document.getElementById("profile-name").textContent = name;
+        document.getElementById("profile-email").textContent = email;
+        document.getElementById("profile-initials").textContent = name
+          .split(" ")
+          .map((n) => n[0])
+          .join("");
+      });
+
+      logoutBtn.addEventListener("click", () => {
+        currentUser = null;
+        userActions.classList.add("hidden");
+        loginSignup.classList.remove("hidden");
+        showView("dashboard-view");
+      });
+
+      navDashboard.addEventListener("click", (e) => {
+        e.preventDefault();
+        showView("dashboard-view");
+        setActiveNav(navDashboard);
+      });
+
+      navProfile.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (currentUser) {
+          showView("profile-view");
+          setActiveNav(navProfile);
+        } else {
+          loginModal.classList.remove("hidden");
+        }
+      });
+
+      navSaved.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (currentUser) {
+          showView("saved-view");
+          setActiveNav(navSaved);
+        } else {
+          loginModal.classList.remove("hidden");
+        }
+      });
+
+      stockSearch.addEventListener("input", () => {
+        const query = stockSearch.value.toLowerCase();
+
+        if (query.length < 2) {
+          searchResults.classList.add("hidden");
+          return;
+        }
+
+        const results = stocks.filter(
+          (stock) =>
+            stock.symbol.toLowerCase().includes(query) ||
+            stock.name.toLowerCase().includes(query)
+        );
+
+        displaySearchResults(results);
+      });
+
+      // Save stock functionality
+      document.addEventListener("click", (e) => {
+        if (e.target.classList.contains("save-btn")) {
+          if (!currentUser) {
+            loginModal.classList.remove("hidden");
+            return;
+          }
+
+          const symbol = e.target.getAttribute("data-symbol");
+          if (!currentUser.savedStocks.includes(symbol)) {
+            currentUser.savedStocks.push(symbol);
+            e.target.innerHTML =
+              '<i class="fas fa-star text-yellow-500"></i> Saved';
+            e.target.classList.add("text-yellow-500");
+          }
+        }
+
+        if (e.target.classList.contains("remove-btn")) {
+          const symbol = e.target.getAttribute("data-symbol");
+          if (currentUser) {
+            currentUser.savedStocks = currentUser.savedStocks.filter(
+              (s) => s !== symbol
+            );
+            // In a real app, we would remove from UI immediately
+            alert(`${symbol} removed from saved stocks`);
+          }
+        }
+      });
+
+      // Helper Functions
+      function updateUIAfterLogin() {
+        if (currentUser) {
+          userActions.classList.remove("hidden");
+          loginSignup.classList.add("hidden");
+          usernameDisplay.textContent = currentUser.name;
+          document.getElementById("profile-name").textContent =
+            currentUser.name;
+          document.getElementById("profile-email").textContent =
+            currentUser.email;
+          document.getElementById("profile-initials").textContent =
+            currentUser.name
+              .split(" ")
+              .map((n) => n[0])
+              .join("");
+        }
+      }
+
+      function showView(viewId) {
+        // Hide all views
+        dashboardView.classList.add("hidden");
+        profileView.classList.add("hidden");
+        savedView.classList.add("hidden");
+
+        // Show requested view
+        document.getElementById(viewId).classList.remove("hidden");
+      }
+
+      function setActiveNav(navElement) {
+        // Remove active class from all nav items
+        navDashboard.classList.remove("text-accent", "border-accent");
+        navProfile.classList.remove("text-accent", "border-accent");
+        navSaved.classList.remove("text-accent", "border-accent");
+
+        navDashboard.classList.add(
+          "text-silver-300",
+          "hover:text-white",
+          "border-transparent",
+          "hover:border-gray-300"
+        );
+        navProfile.classList.add(
+          "text-silver-300",
+          "hover:text-white",
+          "border-transparent",
+          "hover:border-gray-300"
+        );
+        navSaved.classList.add(
+          "text-silver-300",
+          "hover:text-white",
+          "border-transparent",
+          "hover:border-gray-300"
+        );
+
+        // Add active class to clicked nav item
+        navElement.classList.remove(
+          "text-silver-300",
+          "hover:text-white",
+          "border-transparent",
+          "hover:border-gray-300"
+        );
+        navElement.classList.add("text-accent", "border-accent");
+      }
+
+      function displaySearchResults(results) {
+        searchResults.innerHTML = "";
+
+        if (results.length === 0) {
+          searchResults.innerHTML =
+            '<div class="p-4 text-center text-silver-500">No stocks found</div>';
+          searchResults.classList.remove("hidden");
+          return;
+        }
+
+        results.forEach((stock) => {
+          const stockEl = document.createElement("div");
+          stockEl.className =
+            "p-3 border-b border-silver-200 hover:bg-silver-50 cursor-pointer flex justify-between items-center";
+          stockEl.innerHTML = `
+                    <div>
+                        <div class="font-medium">${stock.symbol}</div>
+                        <div class="text-sm text-silver-500">${stock.name}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-medium">$${stock.price}</div>
+                        <div class="text-sm ${
+                          stock.change > 0 ? "text-green-500" : "text-red-500"
+                        }">${stock.change > 0 ? "+" : ""}${stock.change}%</div>
+                    </div>
+                `;
+
+          stockEl.addEventListener("click", () => {
+            // In a real app, we would display the stock details
+            alert(`Displaying details for ${stock.symbol}`);
+            stockSearch.value = "";
+            searchResults.classList.add("hidden");
+          });
+
+          searchResults.appendChild(stockEl);
+        });
+
+        searchResults.classList.remove("hidden");
+      }
+
+      // Initialize the application
+      document.addEventListener("DOMContentLoaded", () => {
+        initCharts();
+        setActiveNav(navDashboard);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+68489ea8038d9940346aa364
+
+Develop a desktop-focused 'Equation Builder' puzzle where players drag numbers/operators to create valid equations matching a target result. Include multiple difficulty tiers, real-time validation highlighting, and a scoring system based on equation complexity/time. Implement collision detection using vanilla JS
+
+
+I want to create an equation builder for players to build mathematical equations with numbers and operators, for matching a previously defined target result. The equation builder must work as a puzzle, and the built equation must be valid. I want to include features such as different difficulty tiers so that users can choose the difficulty level, real-time validation highlighting for incorrect equations, a scoring system based on the equation complexity and the time spent to solve the puzzle, and a key feature that prevents collisions between operators and numbers. I want to create a retro design with a color palette based on #E4D1AC, #FEF6F0, #7AA4D6, #D15F5F, and #030100. The application must work fantastically for a wide variety of desktop devices, but implement a functional mobile layout as well. Provide a single HTML, CSS, and JS file with self-contained code.
