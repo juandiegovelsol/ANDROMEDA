@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retro Equation Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "retro-beige": "#E4D1AC",
+              "retro-offwhite": "#FEF6F0",
+              "retro-blue": "#7AA4D6",
+              "retro-coral": "#D15F5F",
+              "retro-black": "#030100",
+            },
+            fontFamily: {
+              "retro-heading": ['"Press Start 2P"', "cursive"],
+              "retro-body": ["VT323", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .token {
+        transition: all 0.3s ease;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
+        touch-action: none; /* Prevent default touch behaviors */
+      }
+
+      .token:hover {
+        transform: translateY(-3px);
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      .token:active {
+        transform: translateY(2px);
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      @media (hover: none) {
+        .token {
+          box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .token:active {
+          transform: translateY(2px);
+          box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+        }
+      }
+
+      .slot {
+        transition: all 0.2s ease;
+      }
+
+      .slot.drag-over {
+        background-color: rgba(122, 164, 214, 0.3);
+        transform: scale(1.05);
+      }
+
+      .equation-container {
+        min-height: 120px;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .correct {
+        background-color: rgba(122, 164, 214, 0.3);
+        animation: pulse-correct 1s infinite alternate;
+      }
+
+      .incorrect {
+        background-color: rgba(209, 95, 95, 0.3);
+        animation: pulse-incorrect 1s infinite alternate;
+      }
+
+      @keyframes pulse-correct {
+        from {
+          background-color: rgba(122, 164, 214, 0.3);
+        }
+        to {
+          background-color: rgba(122, 164, 214, 0.6);
+        }
+      }
+
+      @keyframes pulse-incorrect {
+        from {
+          background-color: rgba(209, 95, 95, 0.3);
+        }
+        to {
+          background-color: rgba(209, 95, 95, 0.6);
+        }
+      }
+
+      .game-container {
+        box-shadow: 15px 15px 0 rgba(0, 0, 0, 0.4);
+        border: 3px solid #030100;
+      }
+
+      .button-shadow:hover {
+        transition: all 0.3s ease;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      .retro-border {
+        border: 3px solid #030100;
+      }
+
+      .dragging {
+        opacity: 0.7;
+        transform: scale(1.1);
+        z-index: 1000;
+        position: fixed;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-retro-beige min-h-screen font-retro-body text-retro-black flex flex-col items-center py-8 px-8"
+  >
+    <div
+      class="game-container max-w-4xl w-full bg-retro-offwhite overflow-hidden"
+    >
+      <!-- Header -->
+      <header class="bg-retro-blue py-8 px-6 text-center retro-border-b">
+        <h1 class="text-4xl md:text-5xl font-retro-heading text-retro-offwhite">
+          RETRO EQUATION BUILDER
+        </h1>
+        <p class="text-2xl mt-2 text-retro-offwhite">
+          Build equations to match the target!
+        </p>
+      </header>
+
+      <main>
+        <!-- Game Controls -->
+        <section
+          class="flex flex-wrap justify-between items-center pt-6 px-8 bg-retro-offwhite retro-border-b"
+        >
+          <div class="flex items-center space-x-3 mb-2 md:mb-0">
+            <span class="text-2xl">Difficulty:</span>
+            <div class="flex flex-wrap md:space-x-2">
+              <button
+                id="easy-btn"
+                class="difficulty-btn button-shadow bg-retro-blue text-retro-offwhite px-4 py-2 m-1 md:m-0 font-medium text-xl hover:bg-opacity-90 transition"
+              >
+                Easy
+              </button>
+              <button
+                id="medium-btn"
+                class="difficulty-btn button-shadow bg-retro-blue text-retro-offwhite px-4 py-2 m-1 md:m-0 font-medium text-xl hover:bg-opacity-90 transition opacity-70"
+              >
+                Medium
+              </button>
+              <button
+                id="hard-btn"
+                class="difficulty-btn button-shadow bg-retro-blue text-retro-offwhite px-4 py-2 m-1 md:m-0 font-medium text-xl hover:bg-opacity-90 transition opacity-70"
+              >
+                Hard
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center mb-2 md:mb-0">
+            <div class="text-2xl mr-3">Target</div>
+            <div
+              id="target-value"
+              class="text-3xl font-bold text-retro-coral mr-6"
+            >
+              24
+            </div>
+            <button
+              id="new-game-btn"
+              class="bg-retro-coral button-shadow text-retro-offwhite px-4 py-2 font-medium text-xl hover:bg-opacity-90 transition"
+            >
+              New Game
+            </button>
+          </div>
+        </section>
+
+        <!-- Main Game Area -->
+        <section class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Equation Building Area -->
+          <article class="md:col-span-2">
+            <div
+              class="equation-container bg-white py-8 px-4 md:px-8 retro-border"
+            >
+              <div class="text-center text-2xl mb-1">Build Your Equation</div>
+              <div
+                id="equation-slots"
+                class="flex flex-wrap gap-3 min-h-[120px] items-center justify-center p-4"
+              >
+                <!-- Equation slots will be generated here through JavaScript -->
+              </div>
+              <div class="flex justify-center mt-4">
+                <button
+                  id="clear-btn"
+                  class="bg-retro-coral button-shadow text-retro-offwhite px-4 py-2 font-medium text-xl hover:bg-opacity-90 transition"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-6 bg-white p-8 retro-border">
+              <div class="text-center text-2xl mb-3">Current Equation</div>
+              <div
+                id="current-equation"
+                class="text-center text-2xl h-12 flex items-center justify-center"
+              >
+                <span class="text-gray-400">Drag tokens to build equation</span>
+              </div>
+              <div
+                id="validation-result"
+                class="text-center text-xl mt-3 h-8"
+              ></div>
+            </div>
+          </article>
+
+          <!-- Tokens -->
+          <article class="space-y-6 h-full">
+            <!-- Tokens Palette -->
+            <div class="bg-white py-8 px-4 h-full retro-border">
+              <div class="text-center text-2xl mb-6">Available Tokens</div>
+              <div
+                id="tokens-palette"
+                class="flex flex-wrap gap-3 justify-center h-fit"
+              >
+                <!-- Tokens will be generated here through JavaScript -->
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- Score Panel -->
+        <section class="bg-white p-6 retro-border mb-6 mx-6">
+          <article class="text-center text-2xl mb-3">Game Stats</article>
+          <article class="flex flex-wrap">
+            <div class="flex flex-auto justify-center mx-2">
+              <span class="text-xl mr-1">Time:</span>
+              <span id="timer" class="text-xl ml-1">00:00</span>
+            </div>
+            <div class="flex flex-auto justify-center mx-2">
+              <span class="text-xl mr-1">Score:</span>
+              <span id="score" class="text-xl ml-1">0</span>
+            </div>
+            <div class="flex flex-auto justify-center mx-2">
+              <span class="text-xl mr-1">Moves:</span>
+              <span id="moves" class="text-xl ml-1">0</span>
+            </div>
+            <div class="flex flex-auto justify-center mx-2">
+              <span class="text-xl mr-1">Difficulty:</span>
+              <span id="difficulty" class="text-xl ml-1">Easy</span>
+            </div>
+          </article>
+        </section>
+      </main>
+      <!-- Footer -->
+      <footer
+        class="py-4 text-center bg-retro-blue text-retro-offwhite text-lg"
+      >
+        <p>© 2025 Retro Equation Builder | Match the target to score points!</p>
+      </footer>
+    </div>
+
+    <script>
+      // Game state
+      const gameState = {
+        difficulty: "easy",
+        target: 24,
+        score: 0,
+        moves: 0,
+        time: 0,
+        timerInterval: null,
+        tokens: [],
+        equation: [],
+        availableTokens: [],
+        // Mobile drag state
+        isDragging: false,
+        dragElement: null,
+        touchOffset: { x: 0, y: 0 },
+      };
+
+      // Difficulty presets
+      const difficultySettings = {
+        easy: {
+          numbers: [2, 3, 4, 5, 6, 7, 8],
+          operators: ["+", "-", "*"],
+          maxTokens: 5,
+        },
+        medium: {
+          numbers: [4, 5, 6, 7, 8, 9, 10, 12],
+          operators: ["+", "-", "*", "/"],
+          maxTokens: 6,
+        },
+        hard: {
+          numbers: [6, 7, 8, 9, 10, 12, 15, 16, 18, 20],
+          operators: ["+", "-", "*", "/", "**"],
+          maxTokens: 7,
+        },
+      };
+
+      // Initialize game
+      function initGame() {
+        // Set difficulty
+        setDifficulty(gameState.difficulty);
+
+        // Generate target based on difficulty
+        generateTarget();
+
+        // Generate tokens
+        generateTokens();
+
+        // Create equation slots
+        createEquationSlots();
+
+        // Update UI
+        updateUI();
+
+        // Start timer
+        startTimer();
+      }
+
+      // Set difficulty
+      function setDifficulty(level) {
+        gameState.difficulty = level;
+
+        // Update difficulty buttons
+        document.querySelectorAll(".difficulty-btn").forEach((btn) => {
+          btn.classList.remove("opacity-100");
+          btn.classList.add("opacity-70");
+        });
+        document.getElementById(`${level}-btn`).classList.remove("opacity-70");
+        document.getElementById(`${level}-btn`).classList.add("opacity-100");
+
+        // Update difficulty display
+        document.getElementById("difficulty").textContent =
+          level.charAt(0).toUpperCase() + level.slice(1);
+      }
+
+      // Generate target number
+      function generateTarget() {
+        const settings = difficultySettings[gameState.difficulty];
+        const minTarget = settings.numbers.reduce((a, b) => Math.min(a, b)) * 2;
+        const maxTarget = settings.numbers.reduce((a, b) => Math.max(a, b)) * 4;
+        gameState.target =
+          Math.floor(Math.random() * (maxTarget - minTarget + 1)) + minTarget;
+        document.getElementById("target-value").textContent = gameState.target;
+      }
+
+      // Generate tokens based on difficulty
+      function generateTokens() {
+        const difficulty = gameState.difficulty;
+        const settings = difficultySettings[difficulty];
+        gameState.availableTokens = [];
+
+        const numberPool = [...settings.numbers].sort(
+          () => Math.random() - 0.5
+        );
+        const operatorPool = [...settings.operators].sort(
+          () => Math.random() - 0.5
+        );
+
+        const numNumbersToAdd =
+          difficulty === "easy" ? 7 : difficulty === "medium" ? 8 : 10;
+        const numOperatorsToAdd =
+          difficulty === "easy" ? 3 : difficulty === "medium" ? 4 : 5;
+
+        // Add numbers
+        for (let i = 0; i < numNumbersToAdd; i++) {
+          if (i >= numberPool.length) break;
+          gameState.availableTokens.push({
+            type: "number",
+            value: numberPool[i],
+          });
+        }
+
+        // Add operators
+        for (let i = 0; i < numOperatorsToAdd; i++) {
+          if (i >= operatorPool.length) break;
+          gameState.availableTokens.push({
+            type: "operator",
+            value: operatorPool[i],
+          });
+        }
+
+        // Shuffle tokens
+        gameState.availableTokens.sort(() => Math.random() - 0.5);
+
+        // Render tokens
+        renderTokens();
+      }
+
+      // Render tokens in palette
+      function renderTokens() {
+        const palette = document.getElementById("tokens-palette");
+        palette.innerHTML = "";
+
+        gameState.availableTokens.forEach((token, index) => {
+          const tokenEl = document.createElement("div");
+          tokenEl.className = `token cursor-grab w-16 h-16 flex items-center justify-center text-xl font-medium shadow-md ${
+            token.type === "number"
+              ? "bg-retro-blue text-retro-offwhite"
+              : "bg-retro-coral text-retro-offwhite"
+          }`;
+          tokenEl.textContent = token.value;
+          tokenEl.draggable = true;
+          tokenEl.dataset.index = index;
+          tokenEl.dataset.type = token.type;
+          tokenEl.dataset.value = token.value;
+
+          // Desktop drag events
+          tokenEl.addEventListener("dragstart", handleDragStart);
+
+          // Mobile touch events
+          tokenEl.addEventListener("touchstart", handleTouchStart, {
+            passive: false,
+          });
+          tokenEl.addEventListener("touchmove", handleTouchMove, {
+            passive: false,
+          });
+          tokenEl.addEventListener("touchend", handleTouchEnd, {
+            passive: false,
+          });
+
+          palette.appendChild(tokenEl);
+        });
+      }
+
+      // Create equation slots
+      function createEquationSlots() {
+        const slotsContainer = document.getElementById("equation-slots");
+        slotsContainer.innerHTML = "";
+
+        const maxSlots = difficultySettings[gameState.difficulty].maxTokens;
+        for (let i = 0; i < maxSlots; i++) {
+          const slot = document.createElement("div");
+          slot.className =
+            "slot w-16 h-16 bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center";
+          slot.dataset.index = i;
+
+          // Desktop drag events
+          slot.addEventListener("dragover", handleDragOver);
+          slot.addEventListener("dragenter", handleDragEnter);
+          slot.addEventListener("dragleave", handleDragLeave);
+          slot.addEventListener("drop", handleDrop);
+
+          slotsContainer.appendChild(slot);
+        }
+      }
+
+      // Desktop drag and drop handlers
+      function handleDragStart(e) {
+        e.dataTransfer.setData("text/plain", e.target.dataset.index);
+      }
+
+      function handleDragOver(e) {
+        const slot = e.target.closest(".slot");
+        if (slot && slot.children.length === 0) {
+          e.preventDefault();
+        }
+      }
+
+      function handleDragEnter(e) {
+        e.preventDefault();
+        e.target.classList.add("drag-over");
+      }
+
+      function handleDragLeave(e) {
+        e.target.classList.remove("drag-over");
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        const slot = e.target.closest(".slot");
+
+        // Find slot
+        if (!slot) return;
+
+        slot.classList.remove("drag-over");
+
+        // Check if slot is empty
+        if (slot.children.length > 0) {
+          return;
+        }
+
+        const tokenIndex = e.dataTransfer.getData("text/plain");
+        const slotIndex = slot.dataset.index;
+
+        // Check token validity
+        const token = gameState.availableTokens[tokenIndex];
+        if (!token) return;
+
+        // Add token to equation
+        gameState.equation[slotIndex] = token;
+
+        // Update moves
+        gameState.moves++;
+        document.getElementById("moves").textContent = gameState.moves;
+
+        // Render token in slot
+        renderTokenInSlot(token, slot);
+
+        // Validate equation
+        validateEquation();
+      }
+
+      // Mobile touch handlers
+      function handleTouchStart(e) {
+        e.preventDefault(); // Prevent scrolling
+        gameState.isDragging = true;
+
+        const touch = e.touches[0];
+        const element = e.target;
+
+        // Store drag element and offset
+        gameState.dragElement = element.cloneNode(true);
+        gameState.dragElement.classList.add("dragging");
+
+        const rect = element.getBoundingClientRect();
+        gameState.touchOffset = {
+          x: touch.clientX - rect.left,
+          y: touch.clientY - rect.top,
+        };
+
+        // Position the drag element
+        gameState.dragElement.style.left =
+          touch.clientX - gameState.touchOffset.x + "px";
+        gameState.dragElement.style.top =
+          touch.clientY - gameState.touchOffset.y + "px";
+
+        document.body.appendChild(gameState.dragElement);
+      }
+
+      function handleTouchMove(e) {
+        if (!gameState.isDragging || !gameState.dragElement) return;
+
+        e.preventDefault(); // Prevent scrolling
+
+        const touch = e.touches[0];
+
+        // Update drag element position
+        gameState.dragElement.style.left =
+          touch.clientX - gameState.touchOffset.x + "px";
+        gameState.dragElement.style.top =
+          touch.clientY - gameState.touchOffset.y + "px";
+
+        // Highlight slots under touch
+        const elementBelow = document.elementFromPoint(
+          touch.clientX,
+          touch.clientY
+        );
+        const slot = elementBelow?.closest(".slot");
+
+        // Remove previous highlights
+        document
+          .querySelectorAll(".slot")
+          .forEach((s) => s.classList.remove("drag-over"));
+
+        // Add highlight to current slot
+        if (slot && slot.children.length === 0) {
+          slot.classList.add("drag-over");
+        }
+      }
+
+      function handleTouchEnd(e) {
+        if (!gameState.isDragging) return;
+
+        e.preventDefault();
+        gameState.isDragging = false;
+
+        const touch = e.changedTouches[0];
+
+        // Find element under touch point
+        const elementBelow = document.elementFromPoint(
+          touch.clientX,
+          touch.clientY
+        );
+        const slot = elementBelow?.closest(".slot");
+
+        // Clean up drag element
+        if (gameState.dragElement) {
+          document.body.removeChild(gameState.dragElement);
+          gameState.dragElement = null;
+        }
+
+        // Remove all highlights
+        document
+          .querySelectorAll(".slot")
+          .forEach((s) => s.classList.remove("drag-over"));
+
+        // Handle drop if valid slot
+        if (slot && slot.children.length === 0) {
+          const originalToken = e.target.closest(".token");
+          const tokenIndex = originalToken.dataset.index;
+          const slotIndex = slot.dataset.index;
+
+          const token = gameState.availableTokens[tokenIndex];
+          if (token) {
+            // Add token to equation
+            gameState.equation[slotIndex] = token;
+
+            // Update moves
+            gameState.moves++;
+            document.getElementById("moves").textContent = gameState.moves;
+
+            // Render token in slot
+            renderTokenInSlot(token, slot);
+
+            // Validate equation
+            validateEquation();
+          }
+        }
+      }
+
+      // Render token in slot
+      function renderTokenInSlot(token, slot) {
+        const tokenEl = document.createElement("div");
+        tokenEl.className = `token w-full h-full flex items-center justify-center text-x1 font-bold ${
+          token.type === "number"
+            ? "bg-retro-blue text-retro-offwhite"
+            : "bg-retro-coral text-retro-offwhite"
+        }`;
+        tokenEl.textContent = token.value;
+        tokenEl.draggable = true;
+
+        tokenEl.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("text/plain", slot.dataset.index);
+          e.stopPropagation();
+        });
+
+        tokenEl.addEventListener("click", () => {
+          slot.removeChild(tokenEl);
+          delete gameState.equation[slot.dataset.index];
+          validateEquation();
+        });
+
+        // Add touch events for tokens in slots
+        tokenEl.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          slot.removeChild(tokenEl);
+          delete gameState.equation[slot.dataset.index];
+          validateEquation();
+        });
+
+        slot.appendChild(tokenEl);
+      }
+
+      // Validate equation
+      function validateEquation() {
+        const equationArray = gameState.equation.filter(
+          (token) => token !== undefined
+        );
+        const equationDisplay = document.getElementById("current-equation");
+        const validationResult = document.getElementById("validation-result");
+
+        validationResult.classList.remove(
+          "text-retro-coral",
+          "text-retro-blue",
+          "font-bold"
+        );
+
+        if (equationArray.length === 0) {
+          equationDisplay.innerHTML =
+            '<span class="text-gray-400">Drag tokens to build equation</span>';
+          validationResult.textContent = "";
+          equationDisplay.classList.remove("correct", "incorrect");
+          return;
+        }
+
+        // Build equation string
+        let equationString = equationArray
+          .map((token) => token.value)
+          .join(" ");
+        equationDisplay.textContent = equationString + " = ?";
+
+        // Check if equation is complete and valid
+        try {
+          const result = new Function(`return ${equationString}`)();
+
+          if (isNaN(result)) {
+            validationResult.textContent = "Invalid equation";
+            validationResult.classList.add("text-retro-coral");
+            return;
+          }
+
+          equationDisplay.textContent = equationString + " = " + result;
+
+          if (result === gameState.target) {
+            validationResult.textContent = "Correct! +" + calculateScore();
+            validationResult.classList.add("text-retro-blue", "font-bold");
+            equationDisplay.classList.add("correct");
+            equationDisplay.classList.remove("incorrect");
+
+            // Update score
+            gameState.score += calculateScore();
+            document.getElementById("score").textContent = gameState.score;
+
+            // Generate new tokens for next equation
+            setTimeout(() => {
+              resetEquation();
+              generateTarget();
+              generateTokens();
+            }, 2000);
+          } else {
+            validationResult.textContent = "Incorrect result";
+            validationResult.classList.add("text-retro-coral");
+            equationDisplay.classList.add("incorrect");
+            equationDisplay.classList.remove("correct");
+          }
+        } catch (error) {
+          validationResult.textContent = "Invalid equation";
+          validationResult.classList.add("text-retro-coral");
+          equationDisplay.classList.remove("correct", "incorrect");
+        }
+      }
+
+      // Calculate score
+      function calculateScore() {
+        const baseScore =
+          difficultySettings[gameState.difficulty].maxTokens * 10;
+        const timeBonus = Math.max(0, 500 - gameState.time);
+        const movesPenalty = gameState.moves * 2;
+        return Math.max(10, baseScore + timeBonus - movesPenalty);
+      }
+
+      // Reset equation
+      function resetEquation() {
+        gameState.equation = [];
+        document.getElementById("equation-slots").innerHTML = "";
+        createEquationSlots();
+        document.getElementById("current-equation").innerHTML =
+          '<span class="text-gray-400">Drag tokens to build equation</span>';
+        document.getElementById("validation-result").textContent = "";
+        document
+          .getElementById("current-equation")
+          .classList.remove("correct", "incorrect");
+        gameState.moves = 0;
+        document.getElementById("moves").textContent = "0";
+      }
+
+      // Start timer
+      function startTimer() {
+        clearInterval(gameState.timerInterval);
+        gameState.time = 0;
+
+        gameState.timerInterval = setInterval(() => {
+          gameState.time++;
+          const minutes = Math.floor(gameState.time / 60)
+            .toString()
+            .padStart(2, "0");
+          const seconds = (gameState.time % 60).toString().padStart(2, "0");
+          document.getElementById(
+            "timer"
+          ).textContent = `${minutes}:${seconds}`;
+        }, 1000);
+      }
+
+      // Update UI
+      function updateUI() {
+        document.getElementById("target-value").textContent = gameState.target;
+        document.getElementById("score").textContent = gameState.score;
+        document.getElementById("moves").textContent = gameState.moves;
+        document.getElementById("difficulty").textContent =
+          gameState.difficulty.charAt(0).toUpperCase() +
+          gameState.difficulty.slice(1);
+      }
+
+      // Event Listeners
+      document.getElementById("easy-btn").addEventListener("click", () => {
+        setDifficulty("easy");
+        resetGame();
+      });
+
+      document.getElementById("medium-btn").addEventListener("click", () => {
+        setDifficulty("medium");
+        resetGame();
+      });
+
+      document.getElementById("hard-btn").addEventListener("click", () => {
+        setDifficulty("hard");
+        resetGame();
+      });
+
+      document
+        .getElementById("new-game-btn")
+        .addEventListener("click", resetGame);
+      document
+        .getElementById("clear-btn")
+        .addEventListener("click", resetEquation);
+
+      // Reset game
+      function resetGame() {
+        clearInterval(gameState.timerInterval);
+        gameState.score = 0;
+        gameState.moves = 0;
+        gameState.time = 0;
+        resetEquation();
+        generateTarget();
+        generateTokens();
+        updateUI();
+        startTimer();
+      }
+
+      // Initialize game on load
+      document.addEventListener("DOMContentLoaded", initGame);
+    </script>
+  </body>
+</html>
