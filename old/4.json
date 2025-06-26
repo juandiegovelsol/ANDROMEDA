@@ -1,0 +1,422 @@
+{
+  "courseProgress": {
+    "courseGrade": {},
+    "referralInfo": {},
+    "_id": "685beb1f54638a199086cd42",
+    "worker": "666551489082b5376455194b",
+    "course": {
+      "_id": "6847ab2bb6ff334fd4825cb8",
+      "name": "UI Reviewer Screening",
+      "title": "UI Reviewer Screening",
+      "description": "In this course, you will be evaluated on your capacity to review Tasks. Pay very close attention to reading, most mistakes happen by overlooking what’s being asked. Your answers will determine whether you receive reviewer permissions.",
+      "archived": false,
+      "disabled": false,
+      "projectIds": [],
+      "courseDuration": 31,
+      "courseType": "native",
+      "sections": [
+        {
+          "id": "301c9092-c7f9-4d22-b985-c498a123c23f",
+          "estimatedTime": 0,
+          "recommendedEstimatedTime": 1,
+          "title": "Introduction",
+          "description": "",
+          "courseSectionItems": [
+            {
+              "id": "e016fa7d-fd9a-458c-8ca8-94749cd3ecf5",
+              "weight": 0,
+              "type": "rich_text",
+              "contents": {
+                "singleSelect": true,
+                "body": "<p>Welcome to Andromeda Reviewer Screening Course. In this course, you will be evaluated on your ability to accurately review tasks</p><p>You’ll need to review:</p><ul><li><strong>Visuals</strong> – Modern, responsive, production-quality design</li><li><strong>Explicit Instruction Following</strong> – Features that are explicitly asked on the prompt are missing or are incorrectly implemented</li><li><strong>Features</strong> – All required elements fully implemented and working</li></ul><p><strong>Following prompt instructions is critical for this project! Most task fail because of this, please pay close attention</strong></p>"
+              },
+              "_id": "6852131e6809a9245a4d2455"
+            }
+          ],
+          "_id": "6852131e6809a9245a4d2454"
+        },
+        {
+          "id": "dca3601e-0850-4680-9ce1-a4e36681ba80",
+          "estimatedTime": 0,
+          "recommendedEstimatedTime": 10,
+          "title": "How To Review Tasks",
+          "description": "",
+          "courseSectionItems": [
+            {
+              "id": "90c2c5d2-85b7-46a8-9409-d1678f694b39",
+              "weight": 0,
+              "type": "video",
+              "contents": {
+                "singleSelect": true,
+                "videoUrl": "https://static.remotasks.com/uploads/68071422778b4db750cf7b82/UI%20Reviewers.mp4",
+                "allowSkimming": true
+              },
+              "_id": "6852131e6809a9245a4d2457"
+            }
+          ],
+          "_id": "6852131e6809a9245a4d2456"
+        },
+        {
+          "id": "19f56f84-b5a6-460d-8053-32ab681d447b",
+          "estimatedTime": 5,
+          "recommendedEstimatedTime": 4,
+          "title": "Task 1",
+          "description": "",
+          "courseSectionItems": [
+            {
+              "id": "75930bb4-39f8-4b9f-b1ab-038e02f94d4d",
+              "weight": 0,
+              "type": "rich_text",
+              "contents": {
+                "singleSelect": true,
+                "body": "<p><strong>For this task, do the following:</strong></p><ol><li>Carefully read, review, and understand the prompt.</li><li>Open the UI link, review the UI, test it, check that it follows all prompt requirements, and that it functions the way it should.</li><li>Identify any and ALL issues that may be present in the UI that would cause it to fail.</li><li>Answer the questions about the UI.</li></ol><p><br></p><p><strong>Prompt:</strong></p><p><span style=\"color: rgb(0, 0, 0);\">“Hey, I need an online magazine web app based on NextJS. It should have a list of magazine articles. There should be an important feature called “Immersive Mode” which will provide readers a cinematic experience where each section animates with transitions, background changes, and parallax visuals. There should be a sticky interactive “Table of Contents” section. There should be a Live Search feature that includes filters by tags and authors. There should be a feature called ‘Customization Tools,’ which will include options to toggle dark/light mode, adjust font size and line height, and choose a reading mode: standard or immersive. The design should be very attractive and modern. Return the full code solution using NextJS. The solution should be self-contained within a single TSX file.”</span></p><p><a href=\"https://scale-cds-public-us-west-2.s3.amazonaws.com/63fe4e654667d0a6f128105c/W6GENhB0RV_uzE6\" rel=\"noopener noreferrer\" target=\"_blank\">UI Link</a></p>"
+              },
+              "_id": "6852131e6809a9245a4d2459"
+            },
+            {
+              "id": "dd9ba7e4-072e-4918-a046-0eca67649f67",
+              "weight": 12.5,
+              "type": "multiple_choice",
+              "contents": {
+                "maxAttempts": 1,
+                "singleSelect": true,
+                "skipGrading": true,
+                "question": "<p><strong>Rate the UI on a scale of 1-5. Remember that 1-3 are failing scores, and 4-5 are passing scores.</strong></p>",
+                "choices": [
+                  {
+                    "id": "84897653-133f-43b4-892e-cd1daa391fc5",
+                    "answer": "<p>1</p>",
+                    "isCorrect": false
+                  },
+                  {
+                    "id": "a7e9a752-f4ca-4f04-a21a-df610d2a507d",
+                    "answer": "<p>2</p>",
+                    "isCorrect": true
+                  },
+                  {
+                    "id": "ae772085-71ef-46f9-8d29-5b18bfac445a",
+                    "answer": "<p>3</p>",
+                    "isCorrect": true
+                  },
+                  {
+                    "id": "013fa10b-efc1-4f86-b3dd-f69dfb0c0821",
+                    "answer": "<p>4</p>",
+                    "isCorrect": false
+                  },
+                  {
+                    "id": "3199db1b-debd-445a-b5a3-5b0cb87db56c",
+                    "answer": "<p>5</p>",
+                    "isCorrect": false
+                  }
+                ],
+                "allowMultipleCorrectAnswers": true,
+                "noCorrectAnswerRequired": false
+              },
+              "_id": "6852131e6809a9245a4d245a"
+            },
+            {
+              "id": "e9e53b93-7d3a-4ac5-af0a-e7d7490e8524",
+              "weight": 25,
+              "type": "text_response",
+              "contents": {
+                "singleSelect": true,
+                "question": "<p><strong>Please justify the rating that you gave above. If you rated the task a 4 or a 5, point out what the UI does well. If you rated the task a 1, 2, or 3, point out everything that causes the UI to fail. Be sure to include ALL failing issues.</strong></p>",
+                "enableFreeTextGrader": true,
+                "freeTextGraderConfig": {
+                  "type": "course",
+                  "gradingConfigs": {
+                    "template": "Role: Senior UI/UX engineer acting as an impartial grader\nIssues to detect\n1. Naming mismatch – The feature’s current label conveys personal-ization (e.g., “Personalize”) but the spec requires a label that conveys custom-ization (e.g., “Customization Tools”).\n2. Theme-switcher placement – The spec says the dark/light (theme) switcher must live inside the Customization Tools area, but the current design places it elsewhere.\n\nYour task: Decide whether the candidate’s justification explicitly calls out either of these issues (mentioning close synonyms or regional spellings is fine). If the justification flags at least one of the two issues, grade 1.0; otherwise grade 0.0. Partial credit is not allowed. Ignore any other comments.\n\nAcceptable keyword families (for Issue 1)\nA. “Personalize” family – any token whose root is personaliz- or phrases such as “personal tweaks,” “personal options,” “personalising,” etc.\nB. “Customization Tools” family – any token whose root is customiz- or phrases such as “customisation panel,” “customization toolbox,” “custom suite,” “custom utility,” etc. (British -isation forms count.)\nThe justification must state or clearly imply that the current label (family A) should be replaced by the required label (family B).\n\nAcceptable wording (for Issue 2)\n• Mentions of a theme toggle such as “dark mode toggle,” “light/dark switch,” “theme switcher,” “night-mode button,” etc.\n• Indicates it belongs inside or should be moved into/under/within the Customization Tools (or synonyms like “customisation panel/toolbox,” etc.).\n\nScoring rules\n• 1.0 – The justification references Issue 1 (naming mismatch) or Issue 2 (theme-switcher placement), or both.\n• 0.0 – The justification references neither issue.\nOutput format – return only the numeric score (1.0 or 0.0) with no extra text.\n\n\nResponse to evaluate (delimited by triple angle brackets):\n<<<\n{{response}}\n>>>",
+                    "selectedModel": "gpt_4o",
+                    "outputType": "number"
+                  }
+                }
+              },
+              "_id": "6852131e6809a9245a4d245b"
+            }
+          ],
+          "_id": "6852131e6809a9245a4d2458"
+        },
+        {
+          "id": "49babfa0-b992-46e9-9cfb-4db1fee5473e",
+          "estimatedTime": 5,
+          "recommendedEstimatedTime": 4,
+          "title": "Task 2",
+          "description": "",
+          "courseSectionItems": [
+            {
+              "id": "81cc58ef-8908-4f9f-b8e2-fd53d6c29e9d",
+              "weight": 0,
+              "type": "rich_text",
+              "contents": {
+                "singleSelect": true,
+                "body": "<p><strong>For this task, do the following:</strong></p><ol><li>Carefully read, review, and understand the prompt.</li><li>Open the UI link, review the UI, test it, check that it follows all prompt requirements, and that it functions the way it should.</li><li>Identify any and ALL issues that may be present in the UI that would cause it to fail.</li><li>Answer the questions about the UI.</li></ol><p><br></p><p> <strong>Prompt:</strong></p><p><span style=\"color: rgb(0, 0, 0);\">“I want a live server monitoring interface that tracks CPU, memory, and hard drive performance in real-time using basic HTML/CSS/JavaScript. The dashboard will include dynamic color-coded warnings when metrics exceed user-configurable thresholds, fluid charts showing usage history, a responsive, mobile-focused grid that adapts to all screen sizes, browser push notifications for important alerts, and touch- or hover-activated data hints. Use a Glassmorphism design with a purple-to-blue gradient color scheme and CSS Grid and Flexbox layouts. Ensure all interactive elements are optimized for touch and sized appropriately for the click target. All code must be delivered in a single, standalone HTML format.”</span></p><p><a href=\"https://scale-cds-public-us-west-2.s3.amazonaws.com/65cbc42b32ffab95dd54b864/eei8OFhpabwptq0\" rel=\"noopener noreferrer\" target=\"_blank\">UI Link</a></p>"
+              },
+              "_id": "6852131e6809a9245a4d245d"
+            },
+            {
+              "id": "4e6ba097-0c83-4be3-b346-068f0ee200ec",
+              "weight": 12.5,
+              "type": "multiple_choice",
+              "contents": {
+                "maxAttempts": 1,
+                "singleSelect": true,
+                "skipGrading": true,
+                "question": "<p><strong>Rate the UI on a scale of 1-5. Remember that 1-3 are failing scores, and 4-5 are passing scores.</strong></p>",
+                "choices": [
+                  {
+                    "id": "84897653-133f-43b4-892e-cd1daa391fc5",
+                    "answer": "<p>1</p>",
+                    "isCorrect": false
+                  },
+                  {
+                    "id": "a7e9a752-f4ca-4f04-a21a-df610d2a507d",
+                    "answer": "<p>2</p>",
+                    "isCorrect": true
+                  },
+                  {
+                    "id": "ae772085-71ef-46f9-8d29-5b18bfac445a",
+                    "answer": "<p>3</p>",
+                    "isCorrect": true
+                  },
+                  {
+                    "id": "013fa10b-efc1-4f86-b3dd-f69dfb0c0821",
+                    "answer": "<p>4</p>",
+                    "isCorrect": false
+                  },
+                  {
+                    "id": "3199db1b-debd-445a-b5a3-5b0cb87db56c",
+                    "answer": "<p>5</p>",
+                    "isCorrect": false
+                  }
+                ],
+                "allowMultipleCorrectAnswers": true,
+                "noCorrectAnswerRequired": false
+              },
+              "_id": "6852131e6809a9245a4d245e"
+            },
+            {
+              "id": "6d4c8de8-c493-4be3-a18d-d804fc43a1bc",
+              "weight": 25,
+              "type": "text_response",
+              "contents": {
+                "singleSelect": true,
+                "question": "<p><strong>Please justify the rating that you gave above. If you rated the task a 4 or a 5, point out what the UI does well. If you rated the task a 1, 2, or 3, point out everything that causes the UI to fail. Be sure to include ALL failing issues.</strong></p>",
+                "enableFreeTextGrader": true,
+                "freeTextGraderConfig": {
+                  "type": "course",
+                  "gradingConfigs": {
+                    "template": "Role\nSenior UI/UX engineer acting as an impartial grader\n\nIssues to detect\nThe candidate must explicitly flag at least one of the following problems in the dashboard prototype:\n1. Truncated-percent values – The second digit of the percentages in the CPU Usage, Memory Usage, and Disk Usage cards is sometimes cut off.\n2. Emoji professionalism – The use of emojis makes the interface look unprofessional.\n3. Poor contrast anywhere – Any text or icon that lacks sufficient contrast with its background (e.g., hard to read, low visibility, reduced legibility).\n4. Mobile-layout problems – The layout does not adapt well on mobile; symptoms include the UI being not responsive, elements overflowing, misaligned, overlapping, cut off, or requiring horizontal scrolling.\n\nAcceptable keyword families (close synonyms & regional spellings count)\nA. Truncated-percent:  digit, number, percent, percentage, cut off, cut-off, cutout, truncated, clipped, cropped, overflow, CPU Usage card, Memory Usage card, Disk Usage card\nB. Emoji-professionalism: emoji, emoticon, smiley, icon, unprofessional, informal, juvenile, not business-like\nC. Low-contrast: contrast, readability, legibility, visibility, hard to read, unreadable, illegible, low-contrast, poor contrast, low visibility\nD. Mobile-layout: not responsive, non-responsive, unresponsive, responsive (when clearly negative), mobile, small screen, phone view, breakpoint, overflow on mobile, doesn’t fit on phone, horizontal scroll, elements overlap, layout breaks, misaligned, alignment issue, alignments off, layout inconsistent, layout incorrectly, layout incorrect, labels cut off, mobile-optimised, mobile-optimized\n\nScoring rules\n1.0 – The candidate’s justification clearly references any of the four issues above (using words from the corresponding family) and states or implies it is a problem.\n0.0 – Otherwise. Partial credit is not allowed. Ignore any other comments.\n\nOutput format\nReturn only the numeric score (1.0 or 0.0) with no extra text.\n\nCandidate response to evaluate (delimited by triple angle brackets):\n<<<\n{{response}}\n>>>",
+                    "selectedModel": "gpt_4o",
+                    "outputType": "number"
+                  }
+                }
+              },
+              "_id": "6852131e6809a9245a4d245f"
+            }
+          ],
+          "_id": "6852131e6809a9245a4d245c"
+        },
+        {
+          "id": "9417650d-7a00-43ed-b38e-315b7399ad4f",
+          "estimatedTime": 5,
+          "recommendedEstimatedTime": 4,
+          "title": "Task 3",
+          "description": "",
+          "courseSectionItems": [
+            {
+              "id": "e17b3793-ad2f-4ef7-b94e-88d4ab3ce382",
+              "weight": 0,
+              "type": "rich_text",
+              "contents": {
+                "singleSelect": true,
+                "body": "<p><strong>For this task, do the following:</strong></p><ol><li>Carefully read, review, and understand the prompt.</li><li>Open the UI link, review the UI, test it, check that it follows all prompt requirements, and that it functions the way it should.</li><li>Identify any and ALL issues that may be present in the UI that would cause it to fail.</li><li>Answer the questions about the UI.</li></ol><p><br></p><p> <strong>Prompt:</strong></p><p><span style=\"color: rgb(0, 0, 0);\">“I am a small business owner and I would like to create a simple social media management. I would like to invite members into an application to work on creating and scheduling social media posts as a team. The application should include a shared content calendar where we can schedule posts, a chat feature for talking about ideas, and some basic analytics to monitor likes, shares, and comments. I would like to monitor what posts have been scheduled, published, or awaiting approval. Have a notification system in place for reminders on posts, engagement activity, and team mentions. Be able to post to multiple social profiles, include easy post templates, and enable team members to comment on draft posts. The site should be easy to use with simple post creation, calendar view, and basic performance metrics dashboard. Implement the entire code in Next.js and in a single self-contained TSX file.”</span></p><p><a href=\"https://scale-cds-public-us-west-2.s3.amazonaws.com/63fe4e654667d0a6f128105c/3TQZnR3dlPb-OKd\" rel=\"noopener noreferrer\" target=\"_blank\">UI Link</a></p>"
+              },
+              "_id": "6852131e6809a9245a4d2461"
+            },
+            {
+              "id": "83302307-9795-465f-a668-f496cbe0b47a",
+              "weight": 12.5,
+              "type": "multiple_choice",
+              "contents": {
+                "maxAttempts": 1,
+                "singleSelect": true,
+                "skipGrading": true,
+                "question": "<p><strong>Rate the UI on a scale of 1-5. Remember that 1-3 are failing scores, and 4-5 are passing scores.</strong></p>",
+                "choices": [
+                  {
+                    "id": "84897653-133f-43b4-892e-cd1daa391fc5",
+                    "answer": "<p>1</p>",
+                    "isCorrect": false
+                  },
+                  {
+                    "id": "a7e9a752-f4ca-4f04-a21a-df610d2a507d",
+                    "answer": "<p>2</p>",
+                    "isCorrect": true
+                  },
+                  {
+                    "id": "ae772085-71ef-46f9-8d29-5b18bfac445a",
+                    "answer": "<p>3</p>",
+                    "isCorrect": true
+                  },
+                  {
+                    "id": "013fa10b-efc1-4f86-b3dd-f69dfb0c0821",
+                    "answer": "<p>4</p>",
+                    "isCorrect": false
+                  },
+                  {
+                    "id": "3199db1b-debd-445a-b5a3-5b0cb87db56c",
+                    "answer": "<p>5</p>",
+                    "isCorrect": false
+                  }
+                ],
+                "allowMultipleCorrectAnswers": true,
+                "noCorrectAnswerRequired": false
+              },
+              "_id": "6852131e6809a9245a4d2462"
+            },
+            {
+              "id": "06045458-92f3-4e2c-bc26-c6b6714a6287",
+              "weight": 25,
+              "type": "text_response",
+              "contents": {
+                "singleSelect": true,
+                "question": "<p><strong>Please justify the rating that you gave above. If you rated the task a 4 or a 5, point out what the UI does well. If you rated the task a 1, 2, or 3, point out everything that causes the UI to fail. Be sure to include ALL failing issues.</strong></p>",
+                "enableFreeTextGrader": true,
+                "freeTextGraderConfig": {
+                  "type": "course",
+                  "gradingConfigs": {
+                    "template": "Role: Senior UI/UX engineer acting as an impartial grader\nIssues to detect: The prototype fails to meet five specific requirements. A valid critique must clearly flag at least two of these problems:\n1. You cannot view the actual posts that are scheduled, published, or awaiting approval—only their counts.\n2. There is no way to mark or review draft posts, so teammates cannot comment on drafts.\n3. The light-blue / dark-blue color switch is unreliable and unlabeled.\n4. In the messaging pane, every keystroke triggers an unnecessary page refresh (visible as a flashing “unread messages” count).\n5. The profile-information pop-up is clipped because its overflow is hidden.\n\nYour task: Decide whether the candidate’s justification unmistakably calls out two or more of these defects—even if they use close synonyms or regional spellings.\n\nAcceptable keyword families\nA. Posts-visibility family – phrases like “scheduled list missing,” “can’t see queued posts,” “no view of awaiting-approval items,” “only counters,” “posts not visible,” etc.\nB. Draft-commenting family – mentions of “draft post,” “draft workflow,” “comment on drafts,” “no ‘draft’ status,” “can’t mark as draft,” etc.\nC. Color-toggle family – tokens such as “color switch,” “blue toggle,” “square button top left,” “needs double click,” “no icon,” “should be a slider,” “doesn’t change shade,” etc.\nD. Typing-refresh family – words like “refresh on keystroke,” “page reloads while typing,” “flashing unread counter,” “auto-refresh in chat,” etc.\nE. Popup-cutoff family – phrases like “profile popup clipped,” “content cut off,” “overflow hidden,” “popup too small,” “dialog cropped,” etc.\n\nScoring rules\n• 1.0 – The response includes keywords from at least two different families and clearly states or implies that each referenced aspect is problematic.\n• 0.0 – Otherwise. Partial credit is not allowed. Ignore any other comments.\n\nOutput format – return only the numeric score (1.0 or 0.0) with no extra text.\n\nCandidate response to evaluate (delimited by triple angle brackets):\n<<<\n{{response}}\n>>>",
+                    "selectedModel": "gpt_4o",
+                    "outputType": "number"
+                  }
+                }
+              },
+              "_id": "6852131e6809a9245a4d2463"
+            }
+          ],
+          "_id": "6852131e6809a9245a4d2460"
+        },
+        {
+          "id": "952e3ae8-0796-42c4-942f-a5c5f7423437",
+          "estimatedTime": 5,
+          "recommendedEstimatedTime": 4,
+          "title": "Task 4",
+          "description": "",
+          "courseSectionItems": [
+            {
+              "id": "e54b6f33-e5b9-4427-aadb-ca7539ba9607",
+              "weight": 0,
+              "type": "rich_text",
+              "contents": {
+                "singleSelect": true,
+                "body": "<p><strong>For this task, do the following:</strong></p><ol><li>Carefully read, review, and understand the prompt.</li><li>Open the UI link, review the UI, test it, check that it follows all prompt requirements, and that it functions the way it should.</li><li>Identify any and ALL issues that may be present in the UI that would cause it to fail.</li><li>Answer the questions about the UI.</li></ol><p><br></p><p> <strong>Prompt:</strong></p><p><span style=\"color: rgb(0, 0, 0);\">“I need help building a simple dashboard for tracking some basic stats. I want it to show things like the number of users, daily signups, and a small weekly activity chart. It would be great if I could switch between a light and dark mode and maybe have the chart update when I click a dropdown to change the time range (like this week, this month). I want it to look clean and work well on both desktop and mobile. The dashboard needs to be implemented with TypeScript and Next.js in a single file.”</span></p><p><a href=\"https://scale-cds-public-us-west-2.s3.amazonaws.com/63fe4e654667d0a6f128105c/NwGhrJl1Un9PrbU\" rel=\"noopener noreferrer\" target=\"_blank\">UI Link</a></p>"
+              },
+              "_id": "6852131e6809a9245a4d2465"
+            },
+            {
+              "id": "a0464688-ee4a-46b7-b768-f5dfa188381c",
+              "weight": 12.5,
+              "type": "multiple_choice",
+              "contents": {
+                "maxAttempts": 1,
+                "singleSelect": true,
+                "skipGrading": true,
+                "question": "<p><strong>Rate the UI on a scale of 1-5. Remember that 1-3 are failing scores, and 4-5 are passing scores.</strong></p>",
+                "choices": [
+                  {
+                    "id": "84897653-133f-43b4-892e-cd1daa391fc5",
+                    "answer": "<p>1</p>",
+                    "isCorrect": false
+                  },
+                  {
+                    "id": "a7e9a752-f4ca-4f04-a21a-df610d2a507d",
+                    "answer": "<p>2</p>",
+                    "isCorrect": true
+                  },
+                  {
+                    "id": "ae772085-71ef-46f9-8d29-5b18bfac445a",
+                    "answer": "<p>3</p>",
+                    "isCorrect": true
+                  },
+                  {
+                    "id": "013fa10b-efc1-4f86-b3dd-f69dfb0c0821",
+                    "answer": "<p>4</p>",
+                    "isCorrect": false
+                  },
+                  {
+                    "id": "3199db1b-debd-445a-b5a3-5b0cb87db56c",
+                    "answer": "<p>5</p>",
+                    "isCorrect": false
+                  }
+                ],
+                "allowMultipleCorrectAnswers": true,
+                "noCorrectAnswerRequired": false
+              },
+              "_id": "6852131e6809a9245a4d2466"
+            },
+            {
+              "id": "060d6767-c385-45e0-b812-a494b09fdba0",
+              "weight": 25,
+              "type": "text_response",
+              "contents": {
+                "singleSelect": true,
+                "question": "<p><strong>Please justify the rating that you gave above. If you rated the task a 4 or a 5, point out what the UI does well. If you rated the task a 1, 2, or 3, point out everything that causes the UI to fail. Be sure to include ALL failing issues.</strong></p>",
+                "enableFreeTextGrader": true,
+                "freeTextGraderConfig": {
+                  "type": "course",
+                  "gradingConfigs": {
+                    "template": "Role: Senior UI/UX engineer acting as an impartial grader\n\nIssue to detect: Determine whether the candidate explicitly flags a layout problem on mobile or other small-screen devices.\nIf they mention any defect that occurs in a mobile / small-screen context (e.g., elements cut off, misaligned, overflowing, not responsive), the score is 1 .0; otherwise, 0 .0.\n\nAcceptable keyword families (close synonyms & regional spellings count)\nA. Mobile-context: mobile, phone, handset, small screen, portrait mode, responsive view, breakpoint, tablet (when clearly treated as small)\nB. Layout-problem: cut off, cropped, truncated, hidden, overflow, off-screen, doesn’t fit, not responsive, layout breaks, misaligned, overlaps, glitches, squeezed, clipped\nA valid flag must include at least one word/phrase from each family (A + B) in a single statement or clearly connected sentences, indicating a layout issue on mobile.\n\nScoring rules\n• 1.0 – The response contains at least one Mobile-context term and at least one Layout-problem term, clearly stating or implying a defect on mobile.\n• 0.0 – Otherwise. Partial credit is not allowed. Ignore any other comments.\n\nOutput format – return only the numeric score (1.0 or 0.0) with no extra text.\n\nCandidate response to evaluate (delimited by triple angle brackets):\n<<<\n{{response}}\n>>>",
+                    "selectedModel": "gpt_4o",
+                    "outputType": "number"
+                  }
+                }
+              },
+              "_id": "6852131e6809a9245a4d2467"
+            }
+          ],
+          "_id": "6852131e6809a9245a4d2464"
+        }
+      ],
+      "translatedSections": {},
+      "passingGradeThreshold": 0.74,
+      "isTemplate": false,
+      "showFinalGrade": false,
+      "grantedTagsUponCompletion": ["6847b6e837671535422437d0"],
+      "grantedTagsUponPass": [
+        "6847b6efc42b7d912672c5aa",
+        "68432b4ba82970963c0bf18f"
+      ],
+      "grantedTagsUponFail": ["6847b6f4ab15b8211cfbd012"],
+      "createdBy": "646e5f99fd8b748b37241d9d",
+      "updatedBy": "60df86dc8c67cb001e712633",
+      "allowFreeTextGrading": false,
+      "useCustomQuestionWeights": false,
+      "isTimed": false,
+      "enableMLCheatingDetection": false,
+      "cheatingDetectionLlmArtifactsEnabled": true,
+      "cheatingDetectionLlmArtifacts": "✅,🔧,🔴,🟡,🟠,❌,✔,🚀,🔥,🎯,😆,🏆,🚨,🔹,☑️,⚠️,🌹,1️⃣,2️⃣,3️⃣,4️⃣",
+      "useTipTap": false,
+      "version": 11,
+      "createdAt": "2025-06-10T03:48:59.482Z",
+      "updatedAt": "2025-06-18T01:15:10.091Z",
+      "__v": 10,
+      "minReviewLevel": "0"
+    },
+    "currentSection": 1,
+    "status": "in_progress",
+    "attemptNumber": 1,
+    "completed": false,
+    "courseAnswer": {},
+    "assigned": false,
+    "passingGrade": 0.74,
+    "fullstorySessions": [
+      "https://app.fullstory.com/ui/25WP4/client-session/76d4ba8d-8864-40fd-b933-ea407cc54e7a%3A2f2745cc-85bc-4e1f-a146-3800ec543b31%3A1750854412034"
+    ],
+    "remainingTime": 1860,
+    "projectId": "68071422778b4db750cf7b82",
+    "violationsDetected": [],
+    "createdAt": "2025-06-25T12:27:11.586Z",
+    "updatedAt": "2025-06-25T12:27:45.291Z",
+    "__v": 1
+  }
+}
