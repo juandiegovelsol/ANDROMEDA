@@ -1,0 +1,28 @@
+{
+  "furniture": [
+    {
+      "id": "1751745666093",
+      "type": "sofa",
+      "position": {
+        "x": -0.2235470964608952,
+        "z": -0.13661202185792387
+      },
+      "rotation": 0,
+      "color": "#8B4513",
+      "customSize": null
+    },
+    {
+      "id": "1751745680242",
+      "type": "bookshelf",
+      "position": {
+        "x": 2.632886542648566,
+        "z": 3.26626803705601
+      },
+      "rotation": 0,
+      "color": "#654321",
+      "customSize": null
+    }
+  ],
+  "gridSize": 10,
+  "exportDate": "2025-07-05T20:01:48.035Z"
+}
