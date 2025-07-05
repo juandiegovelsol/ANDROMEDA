@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskCards</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sedan:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4f46e5",
+              secondary: "#14b8a6",
+              danger: "#f43f5e",
+              warning: "#f59e0b",
+            },
+            fontFamily: {
+              sans: ["Sedan", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      @layer utilities {
+        .progress-ring-circle {
+          transition: stroke-dashoffset 0.35s;
+          transform: rotate(-90deg);
+          transform-origin: 50% 50%;
+        }
+      }
+    </style>
+    <style>
+      body {
+        background-image: linear-gradient(to bottom right, #e0e7ff, #dbeafe);
+        background-attachment: fixed;
+      }
+
+      #card-container > .card:first-child {
+        cursor: grab;
+      }
+
+      body.grabbing,
+      body.grabbing * {
+        cursor: grabbing !important;
+      }
+
+      .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+        touch-action: pan-y;
+        border-radius: 20px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05),
+          0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.98);
+        overflow: hidden;
+        width: 100%;
+        margin: 0 auto;
+        min-height: 280px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+      }
+
+      .card:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        transform: translateY(-2px);
+      }
+
+      .card.swiping {
+        transition: transform 0.1s ease;
+      }
+
+      .card.swipe-left {
+        transform: translateX(-150%) rotate(-10deg);
+        opacity: 0;
+      }
+
+      .card.swipe-right {
+        transform: translateX(150%) rotate(10deg);
+        opacity: 0;
+      }
+
+      .card-title {
+        line-height: 1.3;
+        max-width: 100%;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+      }
+
+      .history-item-title {
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .expandable-textarea {
+        resize: none;
+        overflow: hidden;
+        min-height: 40px;
+        max-height: 120px;
+        transition: height 0.2s ease;
+      }
+
+      .add-task-expanded {
+        width: 22rem !important;
+        min-height: 60px !important;
+        height: auto !important;
+        border-radius: 1rem !important;
+        padding: 1rem !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        overflow: visible !important;
+      }
+
+      #custom-category-select {
+        overflow: visible !important;
+      }
+
+      #category-options {
+        position: absolute !important;
+        bottom: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 9999 !important;
+        margin-bottom: 8px !important;
+        max-height: 150px !important;
+        overflow-y: auto !important;
+      }
+
+      #add-task-button:not(.add-task-expanded):hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 6px 20px 0 rgba(79, 70, 229, 0.45) !important;
+      }
+
+      #add-task-button:not(.add-task-expanded):active {
+        transform: translateY(1px) scale(0.95);
+        transition-duration: 0.1s;
+      }
+
+      #add-icon {
+        transition: transform 0.3s ease-in-out;
+      }
+
+      #add-task-button:not(.add-task-expanded):hover #add-icon {
+        transform: rotate(90deg) scale(1.1);
+      }
+
+      #category-options::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      #category-options::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      #category-options::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 10px;
+        border: 2px solid white;
+      }
+
+      #category-options::-webkit-scrollbar-thumb:hover {
+        background-color: #9ca3af;
+      }
+
+      body.modal-open {
+        overflow: hidden;
+      }
+
+      :root {
+        --primary-color: #4f46e5;
+        --secondary-color: #14b8a6;
+        --danger-color: #f43f5e;
+        --warning-color: #f59e0b;
+      }
+    </style>
+  </head>
+
+  <body class="text-gray-800 font-sans max-w-screen overflow-x-hidden pt-20">
+    <header
+      class="fixed top-0 left-0 w-full z-40 bg-white/80 backdrop-blur-sm border-b border-gray-200/50"
+    >
+      <div class="max-w-md mx-auto flex items-center gap-3 px-4 py-3">
+        <svg
+          class="h-10 w-10 text-primary"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M9 12h6"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M9 16h6"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <h1 class="text-3xl font-bold text-primary tracking-tight">
+          Flash Task
+        </h1>
+      </div>
+    </header>
+    <div
+      id="toast-container"
+      class="fixed top-20 right-4 z-50 flex flex-col items-end space-y-2"
+    ></div>
+
+    <main id="app" class="max-w-md mx-auto px-4 pb-5">
+      <section id="home-section" class="mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+          <header class="mb-8 flex items-center gap-4">
+            <div class="flex-shrink-0 bg-primary/10 p-3 rounded-xl shadow-sm">
+              <svg
+                class="h-8 w-8 text-primary"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-3xl font-bold text-gray-800 tracking-tight">
+                Today's Tasks
+              </h2>
+              <div class="text-sm text-gray-500 mt-1">
+                <span>Swipe Left: Forgot</span>
+                <br />
+                <span>Swipe Right: Remembered </span>
+              </div>
+            </div>
+          </header>
+
+          <div class="mb-8 flex-1">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">Tasks</h3>
+              <div>
+                <span id="cards-count" class="text-sm text-gray-500"
+                  >0 tasks</span
+                >
+              </div>
+            </div>
+
+            <div class="relative">
+              <div id="card-container" class="relative h-80 mb-4"></div>
+
+              <div
+                id="no-cards-message"
+                class="absolute inset-0 flex items-center justify-center text-center"
+              >
+                <div class="flex flex-col items-center">
+                  <svg
+                    class="h-16 w-16 text-secondary"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <h3 class="mt-4 text-xl font-bold text-gray-700">
+                    All caught up!
+                  </h3>
+                  <p class="mt-1 text-sm text-gray-500">
+                    You've cleared all your tasks for today. Well done.
+                  </p>
+                  <button
+                    id="add-task-from-empty-state-btn"
+                    class="mt-6 bg-primary text-white font-semibold px-4 py-2 rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
+                  >
+                    Add a New Task
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="cycle-controls"
+              class="mt-4 flex justify-center items-center space-x-4"
+            >
+              <button
+                id="cycle-prev-btn"
+                aria-label="Previous Task"
+                class="h-12 w-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors shadow-md border border-gray-200"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 19l-7-7 7-7"
+                  ></path>
+                </svg>
+              </button>
+              <button
+                id="cycle-next-btn"
+                aria-label="Next Task"
+                class="h-12 w-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors shadow-md border border-gray-200"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="categories-section" class="mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+          <header class="mb-8 flex items-center gap-4">
+            <div class="flex-shrink-0 bg-primary/10 p-3 rounded-xl shadow-sm">
+              <svg
+                class="h-8 w-8 text-primary"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-3xl font-bold text-gray-800 tracking-tight">
+                Categories
+              </h2>
+              <p class="text-sm text-gray-500 mt-1">
+                Group your tasks for better organization.
+              </p>
+            </div>
+          </header>
+
+          <div class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">Your Categories</h3>
+              <button
+                id="add-category-btn"
+                class="text-primary hover:text-primary/80"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div id="categories-grid" class="grid grid-cols-3 gap-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="progress-section">
+        <div class="bg-white rounded-xl shadow p-6">
+          <header class="mb-8 flex items-center gap-4">
+            <div class="flex-shrink-0 bg-primary/10 p-3 rounded-xl shadow-sm">
+              <svg
+                class="h-8 w-8 text-primary"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-3xl font-bold text-gray-800 tracking-tight">
+                Your Progress
+              </h2>
+              <p class="text-sm text-gray-500 mt-1">
+                Track your task completion and memory.
+              </p>
+            </div>
+          </header>
+
+          <div class="mb-8">
+            <h3 class="text-lg font-semibold mb-4">Daily Progress</h3>
+            <div class="flex justify-between items-center">
+              <div class="flex flex-col items-center">
+                <div class="relative w-20 h-20">
+                  <svg class="w-20 h-20" viewBox="0 0 100 100">
+                    <circle
+                      class="text-gray-200"
+                      stroke-width="8"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="40"
+                      cx="50"
+                      cy="50"
+                    />
+                    <circle
+                      id="completed-ring"
+                      class="progress-ring-circle text-primary"
+                      stroke-width="8"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="40"
+                      cx="50"
+                      cy="50"
+                      stroke-dasharray="251.2"
+                      stroke-dashoffset="125.6"
+                    />
+                  </svg>
+                  <div
+                    class="absolute inset-0 flex items-center justify-center"
+                  >
+                    <span id="completed-count" class="text-lg font-bold"
+                      >0/0</span
+                    >
+                  </div>
+                </div>
+                <span class="mt-2 text-sm">Completed</span>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <div class="relative w-20 h-20">
+                  <svg class="w-20 h-20" viewBox="0 0 100 100">
+                    <circle
+                      class="text-gray-200"
+                      stroke-width="8"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="40"
+                      cx="50"
+                      cy="50"
+                    />
+                    <circle
+                      id="remembered-ring"
+                      class="progress-ring-circle text-secondary"
+                      stroke-width="8"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="40"
+                      cx="50"
+                      cy="50"
+                      stroke-dasharray="251.2"
+                      stroke-dashoffset="251.2"
+                    />
+                  </svg>
+                  <div
+                    class="absolute inset-0 flex items-center justify-center"
+                  >
+                    <span id="remembered-count" class="text-lg font-bold"
+                      >0%</span
+                    >
+                  </div>
+                </div>
+                <span class="mt-2 text-sm">Remembered</span>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <div class="relative w-20 h-20">
+                  <svg class="w-20 h-20" viewBox="0 0 100 100">
+                    <circle
+                      class="text-gray-200"
+                      stroke-width="8"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="40"
+                      cx="50"
+                      cy="50"
+                    />
+                    <circle
+                      id="streak-ring"
+                      class="progress-ring-circle text-primary"
+                      stroke-width="8"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="40"
+                      cx="50"
+                      cy="50"
+                      stroke-dasharray="251.2"
+                      stroke-dashoffset="226.08"
+                    />
+                  </svg>
+                  <div
+                    class="absolute inset-0 flex items-center justify-center"
+                  >
+                    <span id="streak-count" class="text-lg font-bold">0</span>
+                  </div>
+                </div>
+                <span class="mt-2 text-sm">Streak</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <h3 class="text-lg font-semibold mb-4">Task History</h3>
+            <div id="history-list" class="space-y-2"></div>
+            <div
+              class="text-center text-gray-500 py-4 hidden"
+              id="no-history-message"
+            >
+              No task history yet. Complete some tasks to see your progress!
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pt-8 pb-10">
+      <div class="max-w-md mx-auto px-4">
+        <div
+          class="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm p-6 text-center"
+        >
+          <div class="flex justify-center items-center mb-4">
+            <svg
+              class="h-8 w-8 text-primary"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M9 12h6"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M9 16h6"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <h3 class="ml-3 text-2xl font-bold text-primary tracking-tight">
+              Flash Task
+            </h3>
+          </div>
+          <p class="text-sm text-gray-600 mb-6">
+            Organize your day, one swipe at a time.
+          </p>
+          <div class="flex justify-center space-x-6 text-gray-500">
+            <a
+              href="#"
+              class="hover:text-primary transition-colors duration-200"
+            >
+              <svg
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </a>
+            <a
+              href="#"
+              class="hover:text-primary transition-colors duration-200"
+            >
+              <svg
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </a>
+            <a
+              href="#"
+              class="hover:text-primary transition-colors duration-200"
+            >
+              <svg
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+            </a>
+          </div>
+          <div class="mt-6 pt-4 border-t border-gray-200 text-xs text-gray-500">
+            <p>Crafted for clarity and focus.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <div
+      id="add-task-button"
+      class="bg-primary overflow-hidden px-4 h-14 w-14 rounded-full fixed bottom-6 right-6 flex items-center justify-center transition-all duration-300 cursor-pointer z-30 shadow-lg"
+      style="max-height: none; box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39)"
+    >
+      <svg
+        id="add-icon"
+        class="w-10 h-10 text-white"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="3"
+          d="M12 5v14m7-7H5"
+        />
+      </svg>
+
+      <div id="task-input-container" class="hidden w-full flex flex-col gap-2">
+        <textarea
+          id="add-task-input"
+          placeholder="Enter a task..."
+          class="expandable-textarea w-full bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-transparent p-2 rounded-lg resize-none border border-gray-300"
+          autocomplete="off"
+          rows="1"
+          maxlength="50"
+        ></textarea>
+
+        <div class="flex items-center gap-2">
+          <div id="custom-category-select" class="relative flex-1">
+            <div
+              id="category-select-trigger"
+              class="flex items-center justify-between bg-white border border-gray-300 rounded-lg p-2 text-sm focus:outline-none cursor-pointer max-w-[280px]"
+            >
+              <div
+                id="selected-category-display"
+                class="flex-1 min-w-0 flex items-center"
+              >
+                <span class="text-sm text-gray-500">Category</span>
+              </div>
+              <svg
+                class="w-4 h-4 text-gray-500 flex-shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+
+            <div
+              id="category-options"
+              class="bg-white rounded-lg shadow-lg hidden p-1"
+            ></div>
+          </div>
+
+          <button
+            type="button"
+            id="submit-task-button"
+            class="flex-shrink-0 h-8 w-8 flex items-center justify-center bg-white text-primary rounded-full hover:bg-gray-100 transition-all shadow-md"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="category-modal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-40 hidden"
+    >
+      <div class="bg-white rounded-lg p-6 w-5/6 max-w-md">
+        <h3 class="text-lg font-semibold mb-4">Add New Category</h3>
+        <input
+          id="category-name-input"
+          type="text"
+          placeholder="Category name"
+          class="w-full p-2 border border-gray-300 rounded mb-4"
+        />
+        <div class="flex space-x-2 mb-4">
+          <div
+            class="w-8 h-8 rounded-full bg-primary cursor-pointer category-color"
+            data-color="#4f46e5"
+          ></div>
+          <div
+            class="w-8 h-8 rounded-full bg-secondary cursor-pointer category-color"
+            data-color="#14b8a6"
+          ></div>
+          <div
+            class="w-8 h-8 rounded-full bg-danger cursor-pointer category-color"
+            data-color="#f43f5e"
+          ></div>
+          <div
+            class="w-8 h-8 rounded-full bg-warning cursor-pointer category-color"
+            data-color="#f59e0b"
+          ></div>
+        </div>
+        <div class="flex justify-end space-x-2">
+          <button
+            id="cancel-category-btn"
+            class="px-4 py-2 border border-gray-300 rounded"
+          >
+            Cancel
+          </button>
+          <button
+            id="save-category-btn"
+            class="px-4 py-2 bg-primary text-white rounded"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="delete-category-modal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-40 hidden"
+    >
+      <div class="bg-white rounded-lg p-6 w-5/6 max-w-md">
+        <div class="flex items-center mb-4 text-danger">
+          <svg
+            class="w-6 h-6 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <h3 class="text-lg font-semibold">Delete Category</h3>
+        </div>
+        <p class="mb-6 text-gray-600" id="delete-category-message">
+          Are you sure you want to delete this category?
+        </p>
+        <div class="flex justify-end space-x-2">
+          <button
+            id="cancel-delete-btn"
+            class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            id="confirm-delete-btn"
+            class="px-4 py-2 bg-danger text-white rounded hover:bg-danger/90 transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let appData = {
+        tasks: [],
+        categories: [],
+        stats: { streak: 0, lastCompleted: null, remembered: 0, forgotten: 0 },
+      };
+
+      const cardContainer = document.getElementById("card-container");
+      const noCardsMessage = document.getElementById("no-cards-message");
+      const cardsCount = document.getElementById("cards-count");
+      const categoriesGrid = document.getElementById("categories-grid");
+      const cycleControls = document.getElementById("cycle-controls");
+      const cyclePrevBtn = document.getElementById("cycle-prev-btn");
+      const cycleNextBtn = document.getElementById("cycle-next-btn");
+      const categoryModal = document.getElementById("category-modal");
+      const deleteCategoryModal = document.getElementById(
+        "delete-category-modal"
+      );
+      const deleteCategoryMessage = document.getElementById(
+        "delete-category-message"
+      );
+      const addCategoryBtn = document.getElementById("add-category-btn");
+      const cancelCategoryBtn = document.getElementById("cancel-category-btn");
+      const saveCategoryBtn = document.getElementById("save-category-btn");
+      const cancelDeleteBtn = document.getElementById("cancel-delete-btn");
+      const confirmDeleteBtn = document.getElementById("confirm-delete-btn");
+      const categoryNameInput = document.getElementById("category-name-input");
+      const categoryColors = document.querySelectorAll(".category-color");
+
+      const completedRing = document.getElementById("completed-ring");
+      const rememberedRing = document.getElementById("remembered-ring");
+      const streakRing = document.getElementById("streak-ring");
+      const completedCount = document.getElementById("completed-count");
+      const rememberedCount = document.getElementById("remembered-count");
+      const streakCount = document.getElementById("streak-count");
+
+      const addTaskButton = document.getElementById("add-task-button");
+      const addTaskFromEmptyStateBtn = document.getElementById(
+        "add-task-from-empty-state-btn"
+      );
+      const addIcon = document.getElementById("add-icon");
+      const taskInputContainer = document.getElementById(
+        "task-input-container"
+      );
+      const addTaskInput = document.getElementById("add-task-input");
+      const submitTaskButton = document.getElementById("submit-task-button");
+      const categorySelectTrigger = document.getElementById(
+        "category-select-trigger"
+      );
+      const categoryOptions = document.getElementById("category-options");
+      const customCategorySelect = document.getElementById(
+        "custom-category-select"
+      );
+
+      let startX = 0,
+        currentX = 0,
+        isSwiping = false,
+        currentCard = null,
+        hasMoved = false;
+      let selectedCategoryColor = "#4f46e5",
+        isAddingTask = false,
+        isSubmitting = false,
+        categoryToDelete = null,
+        swipeStartTime = 0;
+      let taskDisplayOrder = [];
+
+      const SWIPE_THRESHOLD = 120;
+      const MOVE_THRESHOLD = 10;
+      const SWIPE_DURATION_THRESHOLD = 100;
+      const CIRCLE_CIRCUMFERENCE = 251.2;
+
+      function loadData() {
+        const savedData = localStorage.getItem("taskCardsData");
+        if (savedData) {
+          appData = JSON.parse(savedData);
+        } else {
+          appData.categories = [
+            { id: 1, name: "Work", color: "#4f46e5" },
+            { id: 2, name: "Personal", color: "#14b8a6" },
+            { id: 3, name: "Health", color: "#f43f5e" },
+          ];
+          saveData();
+        }
+      }
+
+      function saveData() {
+        localStorage.setItem("taskCardsData", JSON.stringify(appData));
+      }
+
+      function updateTaskDisplayOrder() {
+        const tasksToShow = appData.tasks.filter(
+          (task) => !isTaskCompletedToday(task)
+        );
+        tasksToShow.sort((a, b) => b.id - a.id);
+        taskDisplayOrder = tasksToShow.map((task) => task.id);
+      }
+
+      function renderCategories() {
+        categoriesGrid.innerHTML = "";
+        appData.categories.forEach((category) => {
+          const categoryEl = document.createElement("div");
+          categoryEl.className =
+            "bg-white rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow relative";
+          categoryEl.innerHTML = `
+                    <div class="w-4 h-4 rounded-full mb-2" style="background-color: ${
+                      category.color
+                    }"></div>
+                    <p class="text-sm font-medium truncate">${category.name}</p>
+                    <p class="text-xs text-gray-500">${countTasksByCategory(
+                      category.id
+                    )} tasks</p>
+                    <button class="delete-category-btn absolute top-1 right-1 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-danger hover:text-white transition-colors" data-category-id="${
+                      category.id
+                    }">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>`;
+          categoriesGrid.appendChild(categoryEl);
+        });
+        document.querySelectorAll(".delete-category-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            deleteCategory(parseInt(btn.dataset.categoryId));
+          });
+        });
+      }
+
+      function deleteCategory(categoryId) {
+        const category = appData.categories.find((c) => c.id === categoryId);
+        if (!category) return;
+        categoryToDelete = categoryId;
+        const tasksInCategory = appData.tasks.filter(
+          (task) => task.categoryId === categoryId
+        ).length;
+        deleteCategoryMessage.textContent =
+          tasksInCategory > 0
+            ? `Are you sure you want to delete the "${
+                category.name
+              }" category? This will also delete ${tasksInCategory} task${
+                tasksInCategory !== 1 ? "s" : ""
+              } in this category.`
+            : `Are you sure you want to delete the "${category.name}" category?`;
+        deleteCategoryModal.classList.remove("hidden");
+        document.body.classList.add("modal-open");
+      }
+
+      function confirmDeleteCategory() {
+        if (categoryToDelete === null) return;
+        const category = appData.categories.find(
+          (c) => c.id === categoryToDelete
+        );
+        if (!category) return;
+        appData.tasks = appData.tasks.filter(
+          (task) => task.categoryId !== categoryToDelete
+        );
+        appData.categories = appData.categories.filter(
+          (c) => c.id !== categoryToDelete
+        );
+        saveData();
+        updateUI();
+        showToast(
+          `Category "${category.name}" and its tasks have been deleted.`,
+          "success"
+        );
+        deleteCategoryModal.classList.add("hidden");
+        document.body.classList.remove("modal-open");
+        categoryToDelete = null;
+      }
+
+      function countTasksByCategory(categoryId) {
+        return appData.tasks.filter((task) => task.categoryId === categoryId)
+          .length;
+      }
+
+      function getTodayString() {
+        return new Date().toDateString();
+      }
+
+      function renderCards() {
+        cardContainer.innerHTML = "";
+        const tasksToShow = taskDisplayOrder
+          .map((id) => appData.tasks.find((task) => task.id === id))
+          .filter(Boolean);
+
+        cardsCount.textContent = `${tasksToShow.length} task${
+          tasksToShow.length !== 1 ? "s" : ""
+        }`;
+        noCardsMessage.classList.toggle("hidden", tasksToShow.length > 0);
+        cycleControls.classList.toggle("hidden", tasksToShow.length < 2);
+
+        if (tasksToShow.length === 0) return;
+
+        tasksToShow.forEach((task, index) => {
+          const category = appData.categories.find(
+            (c) => c.id === task.categoryId
+          );
+
+          const card = document.createElement("div");
+          card.className =
+            "card absolute inset-0 bg-white rounded-xl shadow-lg p-6 flex flex-col";
+          card.style.zIndex = tasksToShow.length - index;
+          card.style.transform = `translateY(${index * 6}px) scale(${
+            1 - index * 0.05
+          })`;
+          card.style.opacity = index > 2 ? 0 : 1;
+          card.dataset.taskId = task.id;
+
+          card.innerHTML = `
+                    <div class="absolute top-0 right-0 m-4">
+                        <span class="inline-block max-w-[120px] truncate px-3 py-1 text-xs font-medium rounded-full shadow-sm" style="background-color: ${
+                          category.color
+                        }; color: white;">
+                            ${category.name}
+                        </span>
+                    </div>
+                    <div class="pt-8 px-4 pb-6 flex flex-col justify-center h-full">
+                        <h3 class="card-title text-2xl mb-4 text-gray-800 text-center">${
+                          task.title
+                        }</h3>
+                        <div class="flex justify-center items-center mt-4 text-sm text-gray-500">
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                ${formatDate(task.createdAt)}
+                            </span>
+                        </div>
+                    </div>`;
+
+          if (index === 0) {
+            card.addEventListener("touchstart", handleTouchStart, {
+              passive: true,
+            });
+            card.addEventListener("touchmove", handleTouchMove, {
+              passive: false,
+            });
+            card.addEventListener("touchend", handleTouchEnd);
+            card.addEventListener("mousedown", handleMouseDown);
+          }
+          cardContainer.appendChild(card);
+        });
+      }
+
+      function formatDate(d) {
+        return new Date(d).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
+      }
+      function formatDateWithWeekday(d) {
+        return new Date(d).toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "short",
+          day: "numeric",
+        });
+      }
+
+      function animateCountUp(
+        element,
+        start,
+        end,
+        duration = 1000,
+        prefix = "",
+        suffix = ""
+      ) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+          let currentValue =
+            Number.isInteger(start) && Number.isInteger(end)
+              ? Math.floor(progress * (end - start) + start)
+              : progress * (end - start) + start;
+          element.textContent = `${prefix}${currentValue}${suffix}`;
+          if (progress < 1) window.requestAnimationFrame(step);
+          else element.textContent = `${prefix}${end}${suffix}`;
+        };
+        window.requestAnimationFrame(step);
+      }
+
+      function updateStats() {
+        const completedToday =
+          appData.tasks.filter(isTaskCompletedToday).length;
+        const totalTasks = appData.tasks.length;
+        animateCountUp(
+          completedCount,
+          0,
+          completedToday,
+          1000,
+          "",
+          `/${totalTasks}`
+        );
+        const completedPercentage =
+          totalTasks > 0 ? (completedToday / totalTasks) * 100 : 0;
+        completedRing.style.strokeDashoffset =
+          CIRCLE_CIRCUMFERENCE -
+          (completedPercentage / 100) * CIRCLE_CIRCUMFERENCE;
+        const totalResponses =
+          appData.stats.remembered + appData.stats.forgotten;
+        const rememberedPercentage =
+          totalResponses > 0
+            ? Math.round((appData.stats.remembered / totalResponses) * 100)
+            : 0;
+        animateCountUp(rememberedCount, 0, rememberedPercentage, 1000, "", "%");
+        rememberedRing.style.strokeDashoffset =
+          CIRCLE_CIRCUMFERENCE -
+          (rememberedPercentage / 100) * CIRCLE_CIRCUMFERENCE;
+        animateCountUp(streakCount, 0, appData.stats.streak, 1000);
+        const streakMax = 10;
+        const streakPercentage =
+          Math.min(appData.stats.streak / streakMax, 1) * 100;
+        streakRing.style.strokeDashoffset =
+          CIRCLE_CIRCUMFERENCE -
+          (streakPercentage / 100) * CIRCLE_CIRCUMFERENCE;
+      }
+
+      function handleSwipeMove(diffX) {
+        if (Math.abs(diffX) > MOVE_THRESHOLD) hasMoved = true;
+        currentCard.style.transform = `translateX(${diffX}px) rotate(${
+          diffX * 0.05
+        }deg)`;
+        if (diffX > 0)
+          currentCard.style.boxShadow = `0 0 10px rgba(20, 184, 166, ${Math.min(
+            Math.abs(diffX) / 100,
+            0.5
+          )})`;
+        else if (diffX < 0)
+          currentCard.style.boxShadow = `0 0 10px rgba(244, 63, 94, ${Math.min(
+            Math.abs(diffX) / 100,
+            0.5
+          )})`;
+      }
+      function handleTouchMove(e) {
+        if (isSwiping) {
+          currentX = e.touches[0].clientX;
+          handleSwipeMove(currentX - startX);
+        }
+      }
+      function handleTouchStart(e) {
+        initSwipeGesture(this, e.touches[0].clientX);
+      }
+      function initSwipeGesture(element, startClientX) {
+        startX = startClientX;
+        currentCard = element;
+        isSwiping = true;
+        hasMoved = false;
+        swipeStartTime = Date.now();
+        element.classList.add("swiping");
+        document.body.classList.add("grabbing");
+      }
+      function handleSwipeEnd(diffX, swipeDuration, cleanup = null) {
+        document.body.classList.remove("grabbing");
+        if (
+          Math.abs(diffX) > SWIPE_THRESHOLD &&
+          hasMoved &&
+          swipeDuration > SWIPE_DURATION_THRESHOLD
+        ) {
+          diffX > 0 ? handleSwipeRight() : handleSwipeLeft();
+        } else {
+          currentCard.style.transform = `translateY(0px) scale(1)`;
+          currentCard.style.boxShadow = "";
+          currentCard.classList.remove("swiping");
+        }
+        isSwiping = false;
+        if (cleanup) cleanup();
+      }
+      function handleTouchEnd() {
+        if (isSwiping) {
+          const diffX = currentX - startX;
+          handleSwipeEnd(diffX, Date.now() - swipeStartTime);
+        }
+      }
+      function handleMouseDown(e) {
+        currentX = e.clientX;
+        initSwipeGesture(this, e.clientX);
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+        e.preventDefault();
+      }
+      function handleMouseMove(e) {
+        if (isSwiping) {
+          currentX = e.clientX;
+          handleSwipeMove(currentX - startX);
+        }
+      }
+      function handleMouseUp() {
+        if (!isSwiping) return;
+        const diffX = currentX - startX;
+        const swipeDuration = Date.now() - swipeStartTime;
+        handleSwipeEnd(diffX, swipeDuration, () => {
+          document.removeEventListener("mousemove", handleMouseMove);
+          document.removeEventListener("mouseup", handleMouseUp);
+        });
+      }
+
+      function handleSwipeLeft() {
+        currentCard.classList.add("swipe-left");
+        const taskId = parseInt(currentCard.dataset.taskId);
+        const taskIndex = appData.tasks.findIndex((t) => t.id === taskId);
+        if (taskIndex !== -1) {
+          appData.tasks[taskIndex].forgotten += 1;
+          appData.tasks[taskIndex].completedDate = getTodayString();
+          appData.tasks[taskIndex].completionTimestamp = Date.now();
+          appData.stats.forgotten += 1;
+        }
+        showSadAnimation();
+        updateStreak(false);
+        saveData();
+        setTimeout(() => {
+          updateUI();
+        }, 300);
+      }
+
+      function handleSwipeRight() {
+        currentCard.classList.add("swipe-right");
+        const taskId = parseInt(currentCard.dataset.taskId);
+        const taskIndex = appData.tasks.findIndex((t) => t.id === taskId);
+        if (taskIndex !== -1) {
+          appData.tasks[taskIndex].remembered += 1;
+          appData.tasks[taskIndex].completedDate = getTodayString();
+          appData.tasks[taskIndex].completionTimestamp = Date.now();
+          appData.stats.remembered += 1;
+        }
+        celebrateRememberedTask();
+        updateStreak(true);
+        saveData();
+        setTimeout(() => {
+          updateUI();
+        }, 300);
+      }
+
+      function updateStreak(remembered = false) {
+        const previousStreak = appData.stats.streak;
+
+        if (remembered) {
+          appData.stats.streak += 1;
+        } else {
+          appData.stats.streak = 0;
+        }
+
+        appData.stats.lastCompleted = new Date().toDateString();
+
+        if (previousStreak !== appData.stats.streak) {
+          animateStreakChange(previousStreak, appData.stats.streak);
+        }
+      }
+
+      function animateStreakChange(oldValue, newValue) {
+        const streakCountElement = document.getElementById("streak-count");
+        const streakRingElement = document.getElementById("streak-ring");
+
+        const floatingStreak = document.createElement("div");
+        floatingStreak.style.position = "absolute";
+        floatingStreak.style.left = "50%";
+        floatingStreak.style.top = "50%";
+        floatingStreak.style.transform = "translate(-50%, -50%)";
+        floatingStreak.style.fontSize = "40px";
+        floatingStreak.style.fontWeight = "bold";
+        floatingStreak.style.color =
+          newValue > oldValue ? "var(--primary-color)" : "var(--danger-color)";
+        floatingStreak.style.zIndex = "100";
+        floatingStreak.style.textShadow = "0 0 10px rgba(255,255,255,0.8)";
+        floatingStreak.textContent =
+          newValue > oldValue ? `+${newValue - oldValue}` : "Reset";
+
+        const streakContainer = streakCountElement.closest(".relative");
+
+        if (streakContainer) {
+          streakContainer.style.position = "relative";
+          streakContainer.appendChild(floatingStreak);
+
+          floatingStreak.animate(
+            [
+              { opacity: 0, transform: "translate(-50%, -50%) scale(0.5)" },
+              {
+                opacity: 1,
+                transform: "translate(-50%, -50%) scale(1.5)",
+                offset: 0.4,
+              },
+              { opacity: 0, transform: "translate(-50%, -50%) scale(1)" },
+            ],
+            {
+              duration: 1500,
+              easing: "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+              fill: "forwards",
+            }
+          );
+
+          streakRingElement.animate(
+            [
+              {
+                strokeWidth: "8",
+                stroke:
+                  newValue > oldValue
+                    ? "var(--primary-color)"
+                    : "var(--danger-color)",
+              },
+              {
+                strokeWidth: "12",
+                stroke:
+                  newValue > oldValue
+                    ? "var(--secondary-color)"
+                    : "var(--danger-color)",
+                offset: 0.4,
+              },
+              { strokeWidth: "8", stroke: "currentColor" },
+            ],
+            {
+              duration: 1500,
+              easing: "ease-in-out",
+              fill: "forwards",
+            }
+          );
+
+          setTimeout(() => {
+            if (floatingStreak.parentNode) {
+              floatingStreak.parentNode.removeChild(floatingStreak);
+            }
+          }, 1500);
+        }
+
+        if (streakCountElement) {
+          animateCountUp(streakCountElement, oldValue, newValue, 1000);
+        }
+      }
+
+      function isTaskCompletedToday(task) {
+        return task.completedDate === getTodayString();
+      }
+
+      function updateHistory() {
+        const historyList = document.getElementById("history-list");
+        const noHistoryMessage = document.getElementById("no-history-message");
+        const completedTasks = appData.tasks.filter(
+          (task) => task.completedDate !== null
+        );
+
+        if (completedTasks.length === 0) {
+          noHistoryMessage.classList.remove("hidden");
+          historyList.classList.add("hidden");
+          return;
+        }
+
+        noHistoryMessage.classList.add("hidden");
+        historyList.classList.remove("hidden");
+        historyList.innerHTML = "";
+
+        completedTasks.sort(
+          (a, b) =>
+            (b.completionTimestamp || b.id) - (a.completionTimestamp || a.id)
+        );
+
+        const tasksByDate = {};
+        completedTasks.forEach((task) => {
+          if (!tasksByDate[task.completedDate]) {
+            tasksByDate[task.completedDate] = [];
+          }
+          tasksByDate[task.completedDate].push(task);
+        });
+
+        const dates = Object.keys(tasksByDate).sort(
+          (a, b) => new Date(b) - new Date(a)
+        );
+
+        for (const date of dates) {
+          const dateHeader = document.createElement("div");
+          dateHeader.className =
+            "text-sm font-medium text-gray-500 pt-3 first:pt-0";
+
+          const taskDate = new Date(date);
+          const today = new Date();
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          if (taskDate.toDateString() === today.toDateString()) {
+            dateHeader.textContent = "Today";
+          } else if (taskDate.toDateString() === yesterday.toDateString()) {
+            dateHeader.textContent = "Yesterday";
+          } else {
+            dateHeader.textContent = formatDateWithWeekday(taskDate);
+          }
+
+          historyList.appendChild(dateHeader);
+
+          for (const task of tasksByDate[date]) {
+            const category = appData.categories.find(
+              (c) => c.id === task.categoryId
+            );
+            if (!category) continue;
+
+            const historyItem = document.createElement("div");
+            historyItem.className = "flex items-center p-2 rounded-lg";
+            if (task.remembered > task.forgotten) {
+              historyItem.classList.add(
+                "bg-secondary/10",
+                "border-l-4",
+                "border-secondary"
+              );
+            } else if (task.forgotten > task.remembered) {
+              historyItem.classList.add(
+                "bg-danger/10",
+                "border-l-4",
+                "border-danger"
+              );
+            } else {
+              historyItem.classList.add(
+                "bg-gray-50",
+                "border-l-4",
+                "border-gray-400"
+              );
+            }
+
+            historyItem.innerHTML = `
+                        <div class="flex-1 min-w-0">
+                            <div class="history-item-title font-medium">${task.title}</div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span class="inline-block truncate max-w-full px-2 py-1 rounded-full text-xs" style="background-color: ${category.color}; color: white;">${category.name}</span>
+                            </div>
+                        </div>
+                    `;
+
+            historyList.appendChild(historyItem);
+          }
+        }
+      }
+
+      function updateUI() {
+        updateTaskDisplayOrder();
+        renderCategories();
+        renderCards();
+        updateStats();
+        updateHistory();
+      }
+
+      function showToast(message, type = "error", duration = 3000) {
+        const toastContainer = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 flex items-center max-w-xs text-white`;
+
+        if (type === "error") {
+          toast.classList.add("bg-danger");
+        } else if (type === "success") {
+          toast.classList.add("bg-secondary");
+        } else if (type === "warning") {
+          toast.classList.add("bg-warning");
+        } else {
+          toast.classList.add("bg-primary");
+        }
+
+        let icon = "";
+        if (type === "error") {
+          icon = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        } else if (type === "success") {
+          icon = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+        } else if (type === "warning") {
+          icon = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+        } else {
+          icon = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        }
+
+        toast.innerHTML = `
+          ${icon}
+          <span class="flex-1">${message}</span>
+          <button class="ml-2 text-white focus:outline-none"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        `;
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(100%)";
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = "1";
+          toast.style.transform = "translateX(0)";
+        }, 10);
+        toast.querySelector("button").addEventListener("click", () => {
+          hideToast(toast);
+        });
+        setTimeout(() => {
+          hideToast(toast);
+        }, duration);
+        return toast;
+      }
+
+      function hideToast(toast) {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(100%)";
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      }
+
+      function createParticles(
+        buttonElement,
+        count = 20,
+        colorType = "success"
+      ) {
+        const buttonRect = buttonElement.getBoundingClientRect();
+        const centerX = buttonRect.left + buttonRect.width / 2;
+        const centerY = buttonRect.top + buttonRect.height / 2;
+        const particleContainer = document.createElement("div");
+        particleContainer.style.position = "fixed";
+        particleContainer.style.left = "0";
+        particleContainer.style.top = "0";
+        particleContainer.style.width = "100%";
+        particleContainer.style.height = "100%";
+        particleContainer.style.pointerEvents = "none";
+        particleContainer.style.zIndex = "9999";
+        document.body.appendChild(particleContainer);
+        for (let i = 0; i < count; i++) {
+          const particle = document.createElement("div");
+          const size = Math.random() * 5 + 5;
+          let hue, saturation, lightness;
+          if (colorType === "success") {
+            hue = 160 + Math.random() * 20; // Teal/cyan range
+            saturation = 70 + Math.random() * 20;
+            lightness = 50 + Math.random() * 20;
+          } else if (colorType === "celebration") {
+            hue = Math.random() * 360;
+            saturation = 80 + Math.random() * 20;
+            lightness = 50 + Math.random() * 30;
+          } else if (colorType === "sad") {
+            hue = 340 + Math.random() * 20; // Rose/pink range
+            saturation = 80 + Math.random() * 10;
+            lightness = 60 + Math.random() * 10;
+          }
+          const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+          particle.style.position = "absolute";
+          particle.style.width = `${size}px`;
+          particle.style.height = `${size}px`;
+          particle.style.backgroundColor = color;
+          particle.style.borderRadius =
+            colorType === "celebration"
+              ? Math.random() > 0.5
+                ? "50%"
+                : "0"
+              : "50%";
+          particle.style.boxShadow = `0 0 ${size / 2}px ${color}`;
+          particle.style.left = `${centerX}px`;
+          particle.style.top = `${centerY}px`;
+          particle.style.opacity = "1";
+          particleContainer.appendChild(particle);
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 30 + Math.random() * 70;
+          const duration = 500 + Math.random() * 500;
+          const endX = centerX + Math.cos(angle) * distance;
+          const endY = centerY + Math.sin(angle) * distance;
+          particle.animate(
+            [
+              { transform: "translate(-50%, -50%) scale(0)", opacity: 1 },
+              {
+                transform: `translate(${endX - centerX}px, ${
+                  endY - centerY
+                }px) scale(1)`,
+                opacity: 0.8,
+                offset: 0.7,
+              },
+              {
+                transform: `translate(${endX - centerX}px, ${
+                  endY - centerY
+                }px) scale(0)`,
+                opacity: 0,
+              },
+            ],
+            {
+              duration: duration,
+              easing: "cubic-bezier(0.1, 0.8, 0.2, 1)",
+              fill: "forwards",
+            }
+          );
+        }
+        setTimeout(() => {
+          if (particleContainer.parentNode)
+            particleContainer.parentNode.removeChild(particleContainer);
+        }, 1500);
+      }
+
+      function celebrateRememberedTask() {
+        const celebrationContainer = document.createElement("div");
+        celebrationContainer.style.position = "fixed";
+        celebrationContainer.style.left = "0";
+        celebrationContainer.style.top = "0";
+        celebrationContainer.style.width = "100%";
+        celebrationContainer.style.height = "100%";
+        celebrationContainer.style.pointerEvents = "none";
+        celebrationContainer.style.zIndex = "9998";
+        document.body.appendChild(celebrationContainer);
+        const positions = [
+          { x: window.innerWidth * 0.2, y: window.innerHeight * 0.3 },
+          { x: window.innerWidth * 0.5, y: window.innerHeight * 0.2 },
+          { x: window.innerWidth * 0.8, y: window.innerHeight * 0.3 },
+          { x: window.innerWidth * 0.3, y: window.innerHeight * 0.7 },
+          { x: window.innerWidth * 0.7, y: window.innerHeight * 0.7 },
+        ];
+        positions.forEach((pos) => {
+          const dummyElement = document.createElement("div");
+          dummyElement.style.position = "fixed";
+          dummyElement.style.left = `${pos.x}px`;
+          dummyElement.style.top = `${pos.y}px`;
+          dummyElement.style.width = "10px";
+          dummyElement.style.height = "10px";
+          celebrationContainer.appendChild(dummyElement);
+          setTimeout(() => {
+            createParticles(dummyElement, 15, "celebration");
+          }, Math.random() * 300);
+        });
+        setTimeout(() => {
+          if (celebrationContainer.parentNode) {
+            celebrationContainer.parentNode.removeChild(celebrationContainer);
+          }
+        }, 1500);
+      }
+
+      function showSadAnimation() {
+        const sadContainer = document.createElement("div");
+        sadContainer.style.position = "fixed";
+        sadContainer.style.left = "0";
+        sadContainer.style.top = "0";
+        sadContainer.style.width = "100%";
+        sadContainer.style.height = "100%";
+        sadContainer.style.pointerEvents = "none";
+        sadContainer.style.zIndex = "9998";
+        document.body.appendChild(sadContainer);
+        const pulseCircle = document.createElement("div");
+        pulseCircle.style.position = "absolute";
+        pulseCircle.style.left = "50%";
+        pulseCircle.style.top = "40%";
+        pulseCircle.style.transform = "translate(-50%, -50%)";
+        pulseCircle.style.width = "120px";
+        pulseCircle.style.height = "120px";
+        pulseCircle.style.borderRadius = "50%";
+        pulseCircle.style.backgroundColor = "rgba(244, 63, 94, 0.2)";
+        pulseCircle.style.boxShadow = "0 0 20px rgba(244, 63, 94, 0.4)";
+        pulseCircle.style.opacity = "0";
+        sadContainer.appendChild(pulseCircle);
+        pulseCircle.animate(
+          [
+            { opacity: 0, transform: "translate(-50%, -50%) scale(0.5)" },
+            {
+              opacity: 0.8,
+              transform: "translate(-50%, -50%) scale(1.2)",
+              boxShadow: "0 0 30px rgba(244, 63, 94, 0.5)",
+            },
+            { opacity: 0.6, transform: "translate(-50%, -50%) scale(0.9)" },
+            { opacity: 0.4, transform: "translate(-50%, -50%) scale(1.1)" },
+            { opacity: 0, transform: "translate(-50%, -50%) scale(1.5)" },
+          ],
+          {
+            duration: 1500,
+            easing: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+            fill: "forwards",
+          }
+        );
+        const resetText = document.createElement("div");
+        resetText.style.position = "absolute";
+        resetText.style.left = "50%";
+        resetText.style.top = "40%";
+        resetText.style.transform = "translate(-50%, -50%)";
+        resetText.style.fontSize = "24px";
+        resetText.style.fontWeight = "bold";
+        resetText.style.color = "var(--danger-color)";
+        resetText.style.opacity = "0";
+        resetText.style.textShadow = "0 0 10px rgba(255, 255, 255, 0.5)";
+        resetText.textContent = "Streak Reset";
+        sadContainer.appendChild(resetText);
+        resetText.animate(
+          [
+            { opacity: 0, transform: "translate(-50%, -50%) scale(0.8)" },
+            {
+              opacity: 1,
+              transform: "translate(-50%, -50%) scale(1.1)",
+              offset: 0.4,
+            },
+            { opacity: 0, transform: "translate(-50%, -50%) scale(1)" },
+          ],
+          { duration: 1500, easing: "ease-out", fill: "forwards" }
+        );
+        const particlePositions = [
+          { x: window.innerWidth * 0.3, y: window.innerHeight * 0.4 },
+          { x: window.innerWidth * 0.5, y: window.innerHeight * 0.4 },
+          { x: window.innerWidth * 0.7, y: window.innerHeight * 0.4 },
+        ];
+        particlePositions.forEach((pos) => {
+          const dummyElement = document.createElement("div");
+          dummyElement.style.position = "fixed";
+          dummyElement.style.left = `${pos.x}px`;
+          dummyElement.style.top = `${pos.y}px`;
+          sadContainer.appendChild(dummyElement);
+          setTimeout(() => {
+            createParticles(dummyElement, 8, "sad");
+          }, Math.random() * 200);
+        });
+        showToast("Streak reset", "warning");
+        setTimeout(() => {
+          if (sadContainer.parentNode) {
+            sadContainer.parentNode.removeChild(sadContainer);
+          }
+        }, 1500);
+      }
+
+      function populateCategoryDropdown() {
+        categoryOptions.innerHTML = "";
+
+        appData.categories.forEach((category) => {
+          const option = document.createElement("div");
+          option.className =
+            "flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors";
+          option.dataset.value = category.id;
+          option.dataset.name = category.name;
+
+          option.innerHTML = `
+          <span class="w-2.5 h-2.5 rounded-full mr-3 flex-shrink-0" style="background-color: ${category.color};"></span>
+          <span class="text-sm font-medium text-gray-700 truncate">${category.name}</span>
+        `;
+
+          option.addEventListener("click", function () {
+            selectCategory(this.dataset.value, this.dataset.name);
+          });
+
+          categoryOptions.appendChild(option);
+        });
+      }
+
+      function selectCategory(value, name) {
+        const display = document.getElementById("selected-category-display");
+        const category = appData.categories.find((c) => c.id == value);
+
+        if (category) {
+          display.innerHTML = `
+            <span class="w-2.5 h-2.5 rounded-full mr-3 flex-shrink-0" style="background-color: ${category.color};"></span>
+            <span class="text-sm font-medium truncate">${name}</span>
+          `;
+        }
+
+        categorySelectTrigger.dataset.value = value;
+        categoryOptions.classList.add("hidden");
+      }
+
+      function autoResizeTextarea(textarea) {
+        textarea.style.height = "auto";
+        const scrollHeight = textarea.scrollHeight;
+        const maxHeight = 120;
+        textarea.style.height = Math.min(scrollHeight, maxHeight) + "px";
+
+        if (scrollHeight > maxHeight) {
+          textarea.style.overflowY = "auto";
+        } else {
+          textarea.style.overflowY = "hidden";
+        }
+      }
+
+      function addNewTask() {
+        isSubmitting = true;
+
+        const taskTitle = addTaskInput.value.trim();
+        const categoryId = parseInt(categorySelectTrigger.dataset.value);
+
+        if (taskTitle && !isNaN(categoryId)) {
+          const newTask = {
+            id: Date.now(),
+            title: taskTitle,
+            categoryId: categoryId,
+            createdAt: new Date().toISOString(),
+            completedDate: null,
+            remembered: 0,
+            forgotten: 0,
+          };
+
+          appData.tasks.push(newTask);
+          saveData();
+          animateTaskSuccess();
+        } else {
+          if (!taskTitle && isNaN(categoryId)) {
+            showToast("Please enter a task and select a category", "error");
+          } else if (!taskTitle) {
+            showToast("Please enter a task", "error");
+          } else if (isNaN(categoryId)) {
+            showToast("Please select a category", "error");
+          }
+          isSubmitting = false;
+        }
+      }
+
+      function animateTaskSuccess() {
+        const submitBtn = document.getElementById("submit-task-button");
+
+        submitBtn.classList.add("bg-secondary", "text-white");
+        submitBtn.classList.remove(
+          "bg-white",
+          "text-primary",
+          "hover:bg-gray-100"
+        );
+
+        submitBtn.animate(
+          [
+            { transform: "scale(1)" },
+            { transform: "scale(1.2)" },
+            { transform: "scale(0.9)" },
+            { transform: "scale(1.1)" },
+            { transform: "scale(1)" },
+          ],
+          {
+            duration: 600,
+            easing: "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+          }
+        );
+
+        createParticles(submitBtn, 30);
+
+        setTimeout(() => {
+          closeAddTaskInput();
+          updateUI();
+
+          setTimeout(() => {
+            submitBtn.classList.remove("bg-secondary", "text-white");
+            submitBtn.classList.add(
+              "bg-white",
+              "text-primary",
+              "hover:bg-gray-100"
+            );
+            isSubmitting = false;
+          }, 300);
+        }, 800);
+      }
+
+      function closeAddTaskInput() {
+        isAddingTask = false;
+        addIcon.classList.remove("hidden");
+        taskInputContainer.classList.add("hidden");
+        addTaskButton.classList.remove("add-task-expanded");
+
+        addTaskInput.value = "";
+        addTaskInput.style.height = "auto";
+
+        const display = document.getElementById("selected-category-display");
+        display.innerHTML = `<span class="text-sm text-gray-500">Category</span>`;
+        delete categorySelectTrigger.dataset.value;
+
+        categoryOptions.classList.add("hidden");
+      }
+
+      function handleAddTaskButtonClick(e) {
+        e.stopPropagation();
+
+        if (!isAddingTask) {
+          isAddingTask = true;
+          addIcon.classList.add("hidden");
+          taskInputContainer.classList.remove("hidden");
+          addTaskButton.classList.add("add-task-expanded");
+          populateCategoryDropdown();
+          addTaskInput.focus();
+          addTaskInput.value = "";
+        }
+      }
+
+      addCategoryBtn.addEventListener("click", function () {
+        categoryModal.classList.remove("hidden");
+        document.body.classList.add("modal-open");
+        categoryNameInput.focus();
+      });
+
+      cancelCategoryBtn.addEventListener("click", function () {
+        categoryModal.classList.add("hidden");
+        categoryNameInput.value = "";
+        document.body.classList.remove("modal-open");
+      });
+
+      categoryColors.forEach((colorEl) => {
+        colorEl.addEventListener("click", function () {
+          categoryColors.forEach((el) =>
+            el.classList.remove("ring-2", "ring-offset-2")
+          );
+          this.classList.add("ring-2", "ring-offset-2");
+          selectedCategoryColor = this.dataset.color;
+        });
+      });
+
+      saveCategoryBtn.addEventListener("click", function () {
+        const categoryName = categoryNameInput.value.trim();
+        if (!categoryName) return;
+
+        const newCategory = {
+          id: Date.now(),
+          name: categoryName,
+          color: selectedCategoryColor,
+        };
+
+        appData.categories.push(newCategory);
+        saveData();
+        renderCategories();
+
+        categoryNameInput.value = "";
+        categoryModal.classList.add("hidden");
+        document.body.classList.remove("modal-open");
+      });
+
+      categoryModal.addEventListener("click", function (e) {
+        if (e.target === this) {
+          this.classList.add("hidden");
+          categoryNameInput.value = "";
+        }
+      });
+
+      cancelDeleteBtn.addEventListener("click", function () {
+        deleteCategoryModal.classList.add("hidden");
+        document.body.classList.remove("modal-open");
+        categoryToDelete = null;
+      });
+
+      confirmDeleteBtn.addEventListener("click", confirmDeleteCategory);
+
+      deleteCategoryModal.addEventListener("click", function (e) {
+        if (e.target === this) {
+          this.classList.add("hidden");
+          document.body.classList.remove("modal-open");
+          categoryToDelete = null;
+        }
+      });
+
+      addTaskButton.addEventListener("click", handleAddTaskButtonClick);
+      addTaskFromEmptyStateBtn.addEventListener(
+        "click",
+        handleAddTaskButtonClick
+      );
+
+      cycleNextBtn.addEventListener("click", () => {
+        if (taskDisplayOrder.length < 2) return;
+        const topId = taskDisplayOrder.shift();
+        taskDisplayOrder.push(topId);
+        renderCards();
+      });
+
+      cyclePrevBtn.addEventListener("click", () => {
+        if (taskDisplayOrder.length < 2) return;
+        const bottomId = taskDisplayOrder.pop();
+        taskDisplayOrder.unshift(bottomId);
+        renderCards();
+      });
+
+      addTaskInput.addEventListener("input", function () {
+        autoResizeTextarea(this);
+      });
+
+      addTaskInput.addEventListener("click", function (e) {
+        e.stopPropagation();
+      });
+
+      categorySelectTrigger.addEventListener("click", function (e) {
+        e.stopPropagation();
+        categoryOptions.classList.toggle("hidden");
+      });
+
+      customCategorySelect.addEventListener("click", function (e) {
+        e.stopPropagation();
+      });
+
+      document.addEventListener("click", function () {
+        categoryOptions.classList.add("hidden");
+      });
+
+      submitTaskButton.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (!isSubmitting) {
+          addNewTask();
+        }
+      });
+
+      addTaskInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter" && !e.shiftKey && !isSubmitting) {
+          e.preventDefault();
+          addNewTask();
+        }
+      });
+
+      document.addEventListener("click", function (e) {
+        if (isAddingTask && !addTaskButton.contains(e.target)) {
+          closeAddTaskInput();
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        loadData();
+        updateUI();
+        categoryColors[0].classList.add("ring-2", "ring-offset-2");
+      });
+    </script>
+  </body>
+</html>
